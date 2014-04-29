@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+   <category label="Definicoes gerais">
+      <setting label="[B][COLOR green]Dados de conta:[/B][/COLOR]" type="lsep" />
+      <setting id="login_name" type="text" label="Username" default=""/>
+      <setting id="login_password" type="text" label="Password" default="" option="hidden" enable="!eq(-1,false)"/>
+      <setting id="mensagem-site" type="bool" label="Activar mensagem de informação do site" default="true"/>
+      <setting id="qualidade-auto" type="bool" label="Escolher a melhor qualidade automaticamente" default="false"/>
+      <setting id="subtitles-active" type="bool" label="Activar legendas do site" default="true"/>
+      <setting id="novos-episodios" type="bool" label="Procurar novos episodios no login" default="true"/>
+      <setting id="votar-stopped" type="bool" label="Classificar media apos visualizacao" default="true"/>
+      <setting id="mensagem-pedidos" type="bool" label="Apresentar mensagem de instruções para pedidos" default="true"/>
+      <setting id="sync-trakt" type="bool" label="Sincronizar trakt" default="false"/>
+   </category>
+   <category label="Filmes">
+      <setting label="[B][COLOR green]Definições para Filmes:[/B][/COLOR]" type="lsep" />
+      <setting id="movie-fanart" type="bool" label="Procurar Fanart" default="true"/>
+      <setting id="movie-trailer" type="bool" label="Procurar Trailers" default="false"/>
+    </category>
+   <category label="Séries">
+      <setting label="[B][COLOR green]Definições para Séries:[/B][/COLOR]" type="lsep" />
+      <setting id="series-fanart" type="bool" label="Procurar Fanart" default="true"/>
+   </category>
+   <category label="Tipos de vista">
+      <setting label="[B][COLOR green]Definições de vista:[/B][/COLOR]" type="lsep" />
+     <setting id="menu-view" type="enum" label="Vista - Menus" values="Lista|Lista Grande|Miniatura" default="0"/>
+     <setting id="moviesandseries-view" type="enum" label="Vista - Filmes e Séries" values="Lista|Lista Grande|Miniatura|Posters|Fanart|Media Info 1|Media Info 2|Media Info 3" default="6"/>
+     <setting id="homepage-view" type="enum" label="Vista - Filmes e Séries da Homepage" values="Lista|Lista Grande|Miniatura|Posters|Fanart|Media Info 1|Media Info 2|Media Info 3" default="3"/>
+     <setting id="pedidos-view" type="enum" label="Vista - Menu de pedidos" values="Lista|Lista Grande|Miniatura|Posters|Fanart|Media Info 1|Media Info 2|Media Info 3" default="6"/>
+   </category>
+      <category label="Download">
+      <setting id="download-activo" type="bool" label="Activar opção de download" default="false"/>
+      <setting label="[B][COLOR green]Pasta de download:[/B][/COLOR]" type="lsep" />
+      <setting label="" type="folder" id="folder" source="auto" option="writeable" default="Escolha a pasta"/>
+   </category>
+</settings>
