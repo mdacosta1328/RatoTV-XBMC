@@ -1951,7 +1951,10 @@ def listar_temporadas(name,url,fanart,iconimage,dicionario):
 		except: pass
 	print episodios_dict
 	for episodio in sorted(episodios_dict.iterkeys(), key=keyfunc):
-		addDir_episodio(name,"[B][COLOR green]Episódio " + str(episodio) + "[/B][/COLOR]",str(episodios_dict[episodio]["description"]),url,temporada,episodio,str(episodios_dict[episodio]["source"]),str(episodios_dict[episodio]["srt"]),str(episodios_dict[episodio]["thumbnail"]),fanart)
+		if "srt" in episodios_dict[episodio].keys():
+			addDir_episodio(name,"[B][COLOR green]Episódio " + str(episodio) + "[/B][/COLOR]",str(episodios_dict[episodio]["description"]),url,temporada,episodio,str(episodios_dict[episodio]["source"]),str(episodios_dict[episodio]["srt"]),str(episodios_dict[episodio]["thumbnail"]),fanart)
+		else:
+			addDir_episodio(name,"[B][COLOR green]Episódio " + str(episodio) + "[/B][/COLOR]",str(episodios_dict[episodio]["description"]),url,temporada,episodio,str(episodios_dict[episodio]["source"]),"",str(episodios_dict[episodio]["thumbnail"]),fanart)
 
 def keyfunc(key): return float(key.replace(" e ","."))
 
