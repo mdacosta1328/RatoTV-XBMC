@@ -297,9 +297,9 @@ def stream_qualidade(url,name,iconimage):
 		if rss_source:
 			hash_movie = re.compile('<location>ratotv*(.+?)</location>').findall(rss_source)[0].replace("*","")
 		else: ok=mensagemok('RatoTV','Não conseguiu obter a hash.')
-		if 1==1:
+		try:
 			decoded_url = resolver_externos(hash_movie)
-		else: ok=mensagemok('RatoTV','Não conseguiu resolver a hash.')
+		except: ok=mensagemok('RatoTV','Não conseguiu resolver a hash.')
 		try:
         		subs = re.compile('<captions.files>../(.+?)</captions.files>').findall(rss_source)
         		if len(subs) >= 1: subs = base_url + str(subs[0])
@@ -662,9 +662,12 @@ def series_seasons(url,name,fanart):
 	try:
 		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente \n ou contacte um dos administradores do site.'); match = ''
+	if selfAddon.getSetting('series-season-poster') == 'true':
+		id_tvdb = thetvdb_api()._id(originaltitle,year)
+		json_code = trakt_api().shows_seasons(id_tvdb)
+		print json_code
 	serie_dict_temporadas = {}
 	match = re.compile('data-list="(.+?)" data-sid=".+?".+?Temporada (.+?) ').findall(html_source)
-	#print match
 	for rss,temporada in match:
 		if "http://" not in rss:
 			rss=base_url + rss
@@ -675,7 +678,17 @@ def series_seasons(url,name,fanart):
 		try: serie_dict_temporadas[temporada].append(rss)
 		except: serie_dict_temporadas[temporada] = [rss]
 	for season in sorted(serie_dict_temporadas.iterkeys(),key=int):
-		addDir_temporada("[B][COLOR green]Temporada[/B][/COLOR] " + str(season),url,str(serie_dict_temporadas),39,iconimage,True,fanart)
+		if selfAddon.getSetting('series-season-poster') == 'true':
+			try:
+				for key in json_code:
+					if str(key['season']) == str(season):
+						try: iconimage = key['images']['poster']
+						except: pass
+				addDir_temporada("[B][COLOR green]Temporada[/B][/COLOR] " + str(season),url,str(serie_dict_temporadas),39,iconimage,True,fanart)
+			except: 
+				addDir_temporada("[B][COLOR green]Temporada[/B][/COLOR] " + str(season),url,str(serie_dict_temporadas),39,iconimage,True,fanart)
+		else:
+			addDir_temporada("[B][COLOR green]Temporada[/B][/COLOR] " + str(season),url,str(serie_dict_temporadas),39,iconimage,True,fanart)
 
 
 ###################################################################################
@@ -733,9 +746,9 @@ def download_qualidade(url,name,iconimage):
 			if rss_source:
 				hash_movie = re.compile('<location>ratotv*(.+?)</location>').findall(rss_source)[0].replace("*","")
 			else: ok=mensagemok('RatoTV','Não conseguiu obter a hash.')
-			if 1==1:
+			try:
 				decoded_url = resolver_externos(hash_movie)
-			else: ok=mensagemok('RatoTV','Não conseguiu resolver a hash.')
+			except: ok=mensagemok('RatoTV','Não conseguiu resolver a hash.')
 			try:
         			subs = re.compile('<captions.files>../(.+?)</captions.files>').findall(rss_source)
         			if len(subs) >= 1: subs = base_url + str(subs[0])
@@ -763,7 +776,7 @@ def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 		print "server do rato"
 		request = urllib2.Request(video, headers={"Host" : "ratotv.com","Referer":url})
 	else: request = urllib2.Request(video)
-	if 1==1:
+	try:
 		if episode:
 			print "here"
 			u = urllib2.urlopen(request,timeout=1000)
@@ -819,7 +832,7 @@ def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 		f.close()
 		progresso.close()
 		print "Parei fim de ciclo"
-	else:
+	except:
 		progresso.close()
 		mensagemok('RatoTV','Não conseguiu obter resposta do servidor. Servers sobrecarregados.')
 
@@ -861,7 +874,8 @@ def check_login():
 def menu_view():
     setting = selfAddon.getSetting('menu-view')
     if setting =="0": xbmc.executebuiltin("Container.SetViewMode(50)")
-    if setting =="1": xbmc.executebuiltin("Container.SetViewMode(51)")
+    elif setting =="1": xbmc.executebuiltin("Container.SetViewMode(51)")
+    return
 
 def moviesandseries_view():
     xbmcplugin.setContent(int(sys.argv[1]), 'Movies')
@@ -889,6 +903,7 @@ def pedidos_view():
     elif setting == "6": xbmc.executebuiltin("Container.SetViewMode(503)")
     elif setting == "7": xbmc.executebuiltin("Container.SetViewMode(515)")
     xbmcplugin.setContent(int(sys.argv[1]), 'Movies')
+    return
 
 def homepage_view():
     xbmcplugin.setContent(int(sys.argv[1]), 'Movies')
@@ -902,6 +917,14 @@ def homepage_view():
     elif setting == "6": xbmc.executebuiltin("Container.SetViewMode(503)")
     elif setting == "7": xbmc.executebuiltin("Container.SetViewMode(515)")
     xbmcplugin.setContent(int(sys.argv[1]), 'Movies')
+    return
+
+def episodes_view():
+    setting = selfAddon.getSetting('episodes-view')
+    if setting =="0": xbmc.executebuiltin("Container.SetViewMode(50)")
+    elif setting =="1": xbmc.executebuiltin("Container.SetViewMode(51)")
+    if setting =="2": xbmc.executebuiltin("Container.SetViewMode(500)")
+    return
 
 def comment(url):
     post_id = re.compile('.*/(.+?)-').findall(url)
@@ -1329,7 +1352,9 @@ class JANELA_VOTO(xbmcgui.WindowXMLDialog):
 
 def menu_pedidos(url):
 	addDir_reg_menu("[B][COLOR green]Pedir outro filme/série?[/COLOR][/B]","rato",13,artfolder+'contactar.jpg',True,fanart=fanart_rato_tv)
+	print url
 	pag_actual = url.split('/')[-2]
+	print "pagina actual",pag_actual
 	if int(pag_actual) == 1 and selfAddon.getSetting('mensagem-pedidos') == "true":
 		yes= xbmcgui.Dialog().yesno('RatoTV', 'Clique nos filmes/séries para registar o pedido.', "Pode também pedir outros filmes/séries.", "Continuar a apresentar esta mensagem?",'Não', 'Sim')
 		if yes == 0:
@@ -1348,17 +1373,12 @@ def menu_pedidos(url):
 		try:
 			addDir_reg_menu(img_titulo[0][1] + "[COLOR green] (" + pedidos[0] + " pedidos)[/COLOR]",id_pedido[0],34,"http://ratotv.net" +img_titulo[0][0],False,fanart=fanart_rato_tv)
 		except: pass
-	match = re.compile('.*href="(.+?)"">Seguinte</a></b>').findall(html_source)
-	print match
-	pag_total = re.compile('.*</a><a href="http://www.ratotv.net/requests/page/.+?/"">(.+?)</a>').findall(html_source)
+	match = re.compile('<a href="http://www.ratotv.net/requests/page/.+?/">(.+?)</a>').findall(html_source)
+	pag_total = match[-1]
 	print "paginas total",pag_total
+	print match
 	try:
-		if int(pag_actual) <= int(pag_total[0]):
-			pagtotal = pag_total[0]
-		else: pagtotal = str( int(pag_actual) + 1)
-	except:pass
-	try:
-		addDir_reg_menu("[COLOR green]Página " + str(pag_actual) +"/"+str(pagtotal) + " |[B] Seguinte >>[/COLOR][/B]",match[0],33,artfolder+'seta.jpg',True,fanart=fanart_rato_tv)
+		addDir_reg_menu("[COLOR green]Página " + str(pag_actual) +"/"+str(pag_total) + " |[B] Seguinte >>[/COLOR][/B]",'http://www.ratotv.net/requests/page/' + str(int(pag_actual)+1) + '/',33,artfolder+'seta.jpg',True,fanart=fanart_rato_tv)
 	except: pass
 	pedidos_view()
 
@@ -1776,6 +1796,21 @@ class trakt_api:
     def movie_unwatched(self,coiso):
         data ={ "username": "username","password": "sha1hash","movies": [{"imdb_id": "tt0114746","title": "Twelve Monkeys","year": 1995}]}
 
+    def shows_seasons(self,tvdbid):
+	url_api = 'http://api.trakt.tv/show/seasons.json/'+ self.api_key +'/' + str(tvdbid)
+        try:
+            data = json_get(url_api)
+        except: data = ''
+        return data
+
+    def shows_season(self,tvdbid,season):
+	url_api = 'http://api.trakt.tv/show/season.json/'+ self.api_key +'/' + str(tvdbid) + '/' + str(season)
+        try:
+            data = json_get(url_api)
+        except: data = ''
+        return data
+	
+
 
 #THEMOVIEDB
 
@@ -1995,12 +2030,24 @@ def listar_temporadas(name,url,fanart,iconimage,dicionario):
 				try:episodios_dict[title[0]]["srt"].append(sub[0])
 				except:episodios_dict[title[0]]["srt"]=[sub[0]]
 		except: pass
-	print episodios_dict
+	if selfAddon.getSetting('series-episode-thumbnails') == 'true':
+		id_tvdb = thetvdb_api()._id(originaltitle,year)
+		json_code = trakt_api().shows_season(id_tvdb,temporada)
+	#print episodios_dict
 	for episodio in sorted(episodios_dict.iterkeys(), key=keyfunc):
-		if "srt" in episodios_dict[episodio].keys():
-			addDir_episodio(name,"[B][COLOR green]Episódio " + str(episodio) + "[/B][/COLOR]",str(episodios_dict[episodio]["description"]),url,temporada,episodio,str(episodios_dict[episodio]["source"]),str(episodios_dict[episodio]["srt"]),str(episodios_dict[episodio]["thumbnail"]),fanart)
+		if selfAddon.getSetting('series-episode-thumbnails') == 'true':
+			for key in json_code:
+				if str(key['episode']) == str(episodio):
+					try: screenimage = key['images']['screen']
+					except:screenimage = str(episodios_dict[episodio]["thumbnail"])
 		else:
-			addDir_episodio(name,"[B][COLOR green]Episódio " + str(episodio) + "[/B][/COLOR]",str(episodios_dict[episodio]["description"]),url,temporada,episodio,str(episodios_dict[episodio]["source"]),"",str(episodios_dict[episodio]["thumbnail"]),fanart)
+			screenimage = str(episodios_dict[episodio]["thumbnail"])
+		if "srt" in episodios_dict[episodio].keys():
+			addDir_episodio(name,"[B][COLOR green]Episódio " + str(episodio) + "[/B][/COLOR]",str(episodios_dict[episodio]["description"]),url,temporada,episodio,str(episodios_dict[episodio]["source"]),str(episodios_dict[episodio]["srt"]),screenimage,fanart)
+		else:
+			addDir_episodio(name,"[B][COLOR green]Episódio " + str(episodio) + "[/B][/COLOR]",str(episodios_dict[episodio]["description"]),url,temporada,episodio,str(episodios_dict[episodio]["source"]),"",screenimage,fanart)
+	#episodes_view()
+	xbmc.executebuiltin("Container.SetViewMode(500)")
 
 def keyfunc(key): return float(key.replace(" e ","."))
 
@@ -2092,7 +2139,7 @@ def addDir_reg_menu(name,url,mode,iconimage,folder,fanart=fanart_rato_tv):
     return ok
 
 def addDir_temporada(name,url,dicionario,mode,iconimage,folder,fanart):
-    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&dicionario="+urllib.quote_plus(dicionario)
+    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&dicionario="+urllib.quote_plus(dicionario)+"&year="+urllib.quote_plus(year)
     if fanart: u+= '&fanart='+urllib.quote_plus(fanart)
     if originaltitle: u+="&originaltitle="+urllib.quote_plus(originaltitle)
 ###AMELHORAR!
@@ -2111,7 +2158,7 @@ def addDir_temporada(name,url,dicionario,mode,iconimage,folder,fanart):
     return ok
 
 def addDir_filme(name,url,mode,iconimage,infolabels,fanart,totalit,pasta,tipo,HD,favorito):
-    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&iconimage="+urllib.quote_plus(iconimage)+"&tipo="+urllib.quote_plus(tipo)
+    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&iconimage="+urllib.quote_plus(iconimage)+"&tipo="+urllib.quote_plus(tipo)+"&year="+infolabels['Year']
     try: u += "&imdb_id="+infolabels['code']
     except: pass
     try: u += "&originaltitle="+infolabels['originaltitle']
@@ -2205,7 +2252,7 @@ def addDir_episodio(nomeSerie,title,description,url,temporada,episodio,sources,s
         trakt_instalado = True
         trakt_addon.getSetting('username')
     except: trakt_instalado = False
-    if 1==1:
+    try:
         if trakt_instalado == True and selfAddon.getSetting("sync-trakt") == "true":
             vistos = trakt_api().return_watched_shows(trakt_addon.getSetting('username'))
             for serie_name in vistos:
@@ -2215,7 +2262,7 @@ def addDir_episodio(nomeSerie,title,description,url,temporada,episodio,sources,s
                     for season_trakt in serie_name["seasons"]:
                         print "season é",temporada,type(temporada)
                         if season_trakt["season"] == int(temporada): visto = True
-    else: pass
+    except: pass
     if visto:
         contextmen.append(('Marcar como não visto', 'XBMC.RunPlugin(%s?mode=22&url=%s&season=%s&episode=%s)' % (sys.argv[0], url, temporada, episodio)))
         overlay=7
@@ -2437,6 +2484,7 @@ imdb_id=None
 originaltitle=None
 sources=None
 dicionario=None
+year=None
 
 
 try: url=urllib.unquote_plus(params["url"])
@@ -2473,6 +2521,8 @@ try: subs=urllib.unquote_plus(params["subs"])
 except: pass
 try: dicionario=urllib.unquote_plus(params["dicionario"])
 except: pass
+try: year=urllib.unquote_plus(params["year"])
+except: pass
 
 print 'mode='+str(mode)
 print 'imdb_id='+str(imdb_id)
@@ -2485,6 +2535,7 @@ print 'srt='+str(srt)
 print 'url='+str(url)
 print 'dicionario='+str(dicionario)
 print 'seriesName='+str(seriesName)
+print 'year='+str(year)
 
 
 ###############################################################################################################

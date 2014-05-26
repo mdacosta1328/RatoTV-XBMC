@@ -1,3 +1,8 @@
+1.1.1
+-Adicionados posters de temporada (trakt)
+-Adicionado thumbnails de episodio (trakt)
+-Fix pedidos
+
 1.1.0
 -Fix pesquisa (ja nao é necessário voltar atras)
 -Fix opcao externa 3
