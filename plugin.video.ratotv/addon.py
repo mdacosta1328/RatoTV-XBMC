@@ -51,7 +51,7 @@ if selfAddon.getSetting('ga_visitor')=='':
 
 PATH = "ratotv"  #<---- PLUGIN NAME MINUS THE "plugin.video"
 UATRACK="UA-41937813-3" #<---- GOOGLE ANALYTICS UA NUMBER
-VERSION = "1.0.1" #<---- PLUGIN VERSION
+VERSION = "1.1.0" #<---- PLUGIN VERSION
 
 
 ######################################################################################################
@@ -69,9 +69,8 @@ def Menu_principal():
         addDir_reg_menu('','','',addonfolder+'logo.png',False)
         addDir_reg_menu('Favoritos','http://www.ratotv.net/favorites/page/1/',15,artfolder+'favoritos.jpg',True)
 	addDir_reg_menu('Séries a seguir',base_url + 'index.php?cstart=1&do=cat&category=tvshows',26,artfolder+'series.jpg',True)
-        addDir_reg_menu('Categorias','url',5,artfolder+'categorias.jpg',True)
-        addDir_reg_menu('HD',base_url +'index.php?cstart=1&do=xfsearch&xf=HD',2,artfolder+'hd.jpg',True)
-
+        addDir_reg_menu('Géneros','url',5,artfolder+'categorias.jpg',True)
+        addDir_reg_menu('Ano','url',42,artfolder+'pesquisa.jpg',True)
         addDir_reg_menu('Definições','url',9,artfolder+'definicoes.jpg',True)
         #addDir_reg_menu('Menu teste','url',29,artfolder+'contactar.jpg',True)
         addDir_reg_menu('','','',addonfolder+'logo.png',False)
@@ -135,6 +134,13 @@ def alterar_definicoes():
             addDir_reg_menu('Entrar novamente','url',None,artfolder+'refresh.jpg',True)
             menu_view()
             xbmcplugin.endOfDirectory(int(sys.argv[1]))
+
+def menu_ano():
+	addDir_reg_menu('[B][COLOR green]Introduzir ano manualmente[/B][/COLOR]','url',41,artfolder+'pesquisa.jpg',True)
+	for i in reversed(xrange(1900,2015)):
+		addDir_reg_menu(str(i),base_url + 'tags/' + str(i) + '/page/1/',16,artfolder+'pesquisa.jpg',True)
+
+	
 
 ##################################################################################################################################
 #                                                       FUNCOES LISTAGEM                                                         #
@@ -207,7 +213,12 @@ def resolver_externos(hashstring):
 				mydata += ',("usr_login",""),("referer","")]';data = eval(mydata);
 				handle_wait(6,"RatoTV","Por favor aguarde 6 segundos...",segunda='')
 				sourcecode = post_page_free(binascii.unhexlify(''.join('68 74 74 70 3A 2F 2F 73 74 72 65 61 6D 69 6E 2E 74 6F 2F'.split())) + str(decoded_url.replace("stri","")),data)
-				swfurl = re.compile('src: "(.+?)" }').findall(sourcecode)[0];rtmpurl = re.compile('streamer: "(.+?)"').findall(sourcecode)[0];	playpath = re.compile("file:'(.+?)'").findall(sourcecode)[0];rtmpurl = rtmpurl + ' playpath=' + playpath + ' swfUrl='+swfurl
+				try:
+					swfurl = re.compile('src: "(.+?)" }').findall(sourcecode)[0];rtmpurl = re.compile('streamer: "(.+?)"').findall(sourcecode)[0];	playpath = re.compile("file:'(.+?)'").findall(sourcecode)[0];rtmpurl = rtmpurl + ' playpath=' + playpath + ' swfUrl='+swfurl
+				except:
+					try:
+						rtmpurl= re.compile('{file: "(.+?)"}').findall(sourcecode)[1]
+					except: pass
 				return rtmpurl
 			except: ok=mensagemok('RatoTV','Não conseguiu resolver a hash.'); return False
 		else:
@@ -390,7 +401,27 @@ def pesquisa(url):
         search = keyb.getText()
         encode=urllib.quote(search)
         url_pesquisa = base_url + '?do=search&subaction=search&search_start=1&story=' + str(encode)
-        xbmc.executebuiltin('XBMC.Container.Refresh(%s?mode=16&url=%s)' % (sys.argv[0], urllib.quote_plus(url_pesquisa)))
+	print url_pesquisa
+	listar_pesquisa(urllib.quote_plus(url_pesquisa))
+
+def pesquisa_ano(url):
+    keyb = xbmc.Keyboard('', 'Escreva o ano')
+    keyb.doModal()
+    if (keyb.isConfirmed()):
+        search = keyb.getText()
+        encode=urllib.quote(search)
+	try:
+		int(encode)
+		inteiro = True
+	except:
+		inteiro = False
+		ok=mensagemok('RatoTV','Por favor coloque um valor inteiro!')
+	if inteiro:
+        	url_pesquisa = base_url + 'tags/' + str(encode) + '/page/1/'
+		print url_pesquisa
+		listar_pesquisa(urllib.quote_plus(url_pesquisa))
+	else:
+		sys.exit(0)
 
 def filmes_homepage(name,url):
     try:
@@ -491,42 +522,56 @@ def listar_media(url,mode):
 
 
 def listar_pesquisa(url):
-    URLpesquisa = url
-    try:
-        html_source = post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
-        html_source_trunk = re.findall('<div class="shortpost">(.*?)<\/div>\n<\/div>\n<\/div>', html_source, re.DOTALL)
-        print len(html_source_trunk)
-    except:
-        ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente ou contacte um dos administradores do site.')
-        return
-    current_page = re.compile('search_start=([0-9]+)').findall(url)
-    paginas = re.compile('<a.+?list_submit\((.+?)\);').findall(html_source)
-    totalit = len(html_source_trunk)
-    for html_trunk in html_source_trunk:
-        infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_trunk)
-        if filme_ou_serie == 'movie':
-            addDir_filme(name + ' ('+str(infolabels['Year'])+')',url,3,iconimage,infolabels,fanart,totalit,False,'movie',HD,favorito)
-        elif filme_ou_serie == 'tvshow':
-            addDir_filme(name + ' ('+str(infolabels['Year'])+')',url,10,iconimage,infolabels,fanart,totalit,True,'tvshow',HD,favorito)
-    try:
-        total_paginas = paginas[-2]
-        pag_seguinte = paginas[-1]
-        pagina_seguinte = re.sub('search_start=[0-9]+','search_start='+pag_seguinte[0],URLpesquisa).replace('amp;','')
-        print pagina_seguinte
-        if int(pag_seguinte) > int(current_page[0]):
-            addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas + ') | Próxima >>>[/COLOR]',pagina_seguinte,16,artfolder+'seta.jpg',True)
-        else:pass
-    except: pass
-    moviesandseries_view()
-    return
-
-
+	URLpesquisa = urllib.unquote(url)
+	encode = True
+	try:
+		html_source = post_page(urllib.unquote(url),selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+		html_source_trunk = re.findall('<div class="shortpost">(.*?)<\/div>\n<\/div>\n<\/div>', html_source, re.DOTALL)
+		print len(html_source_trunk)
+	except:
+		ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente ou contacte um dos administradores do site.')
+		sys.exit(0)
+	current_page = re.compile('id="search_start" value="(.+?)"').findall(html_source)
+	if not current_page:
+		current_page = [ url.split('/')[-2] ]
+		encode = False
+	paginas = re.compile('<a.+?list_submit\((.+?)\);').findall(html_source)
+	if not paginas:
+		paginas = []
+		paginas_check = re.compile('href=".+?/page/(.+?)/">(.+?)</a>').findall(html_source)
+		for pagurl,paga in paginas_check:
+			if pagurl == paga:
+				paginas.append(paga)
+	totalit = len(html_source_trunk)
+ 	if totalit != 0:
+		for html_trunk in html_source_trunk:
+			try:
+				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_trunk)
+				if filme_ou_serie == 'movie':
+					addDir_filme(name + ' ('+str(infolabels['Year'])+')',url,3,iconimage,infolabels,fanart,totalit,False,'movie',HD,favorito)
+				elif filme_ou_serie == 'tvshow':
+					addDir_filme(name + ' ('+str(infolabels['Year'])+')',url,10,iconimage,infolabels,fanart,totalit,True,'tvshow',HD,favorito)
+			except:pass
+		try:
+			total_paginas = max(paginas)
+			pag_seguinte = paginas[-1]
+			if encode:
+				pagina_seguinte = re.sub('search_start=[0-9]+','search_start='+pag_seguinte[0],URLpesquisa).replace('amp;','')
+			else:
+				pagina_seguinte = URLpesquisa.replace('/'+current_page[0]+'/','/' + str(int(current_page[0])+1)+'/')
+			if int(pag_seguinte) > int(current_page[0]):
+				addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas + ') | Próxima >>>[/COLOR]',pagina_seguinte,16,artfolder+'seta.jpg',True)
+			else:pass
+		except: pass
+		moviesandseries_view()
+	else:
+		ok=mensagemok('RatoTV','Não existem resultados.')
+		sys.exit(0)
 
 def rato_tv_get_media_info(html_trunk):
     print "get media info"
     data_dict = dict([('code',''),('Count', ''),('Title', ''), ('Year', ''),('Rating', ''),('Genre', ''),('Director', ''),('Cast', list()),('Plot', ''),('Trailer', '')])
     match = re.compile('href="(.+?)".+?<img src="(.+?)" alt="(.+?)" />').findall(html_trunk)
-    #print "match inicial:",match
     for url_newsid,iconimage,name in match:
 	print "Dados obtidos para o item:",url_newsid,iconimage,name
         if iconimage.find('http://') == -1: thumbnail = base_url + iconimage
@@ -587,6 +632,7 @@ def rato_tv_get_media_info(html_trunk):
     if match:
         if match[0] == 'HD': HD = True
         elif match[0] == 'SD': HD = False
+	else: HD = match[0]
     match = re.compile('<span class="favorite">.+?href="(.+?)"').findall(html_trunk)
     favorito = False
     if match:
@@ -618,7 +664,7 @@ def series_seasons(url,name,fanart):
 	except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente \n ou contacte um dos administradores do site.'); match = ''
 	serie_dict_temporadas = {}
 	match = re.compile('data-list="(.+?)" data-sid=".+?".+?Temporada (.+?) ').findall(html_source)
-	print match
+	#print match
 	for rss,temporada in match:
 		if "http://" not in rss:
 			rss=base_url + rss
@@ -628,8 +674,7 @@ def series_seasons(url,name,fanart):
 	for temporada,rss in match:
 		try: serie_dict_temporadas[temporada].append(rss)
 		except: serie_dict_temporadas[temporada] = [rss]
-	print serie_dict_temporadas
-	for season in sorted(serie_dict_temporadas.iterkeys()):
+	for season in sorted(serie_dict_temporadas.iterkeys(),key=int):
 		addDir_temporada("[B][COLOR green]Temporada[/B][/COLOR] " + str(season),url,str(serie_dict_temporadas),39,iconimage,True,fanart)
 
 
@@ -1055,12 +1100,13 @@ def proximo_episodio(url):
 	try:
 		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: html_source = ''
-	match = re.compile('<span>Título Original: </span><span class="fvalue">(.+?)</span>').findall(html_source)
+	match = re.compile('<strong>Título Original: </strong>(.+?)</li>').findall(html_source)
 	if match != []: titulo_original=match[0]
 	else: titulo_original = ''
-	match = re.compile('<span>Ano: </span><span class="fvalue"><a href=".+?">(.+?)</a></span>').findall(html_source)
+	match = re.compile('<strong>Ano: </strong><a href=".+?">(.+?)</a></li>').findall(html_source)
 	if match != []: year=match[0]
 	else: year = ''
+	print "titulooriginaleyear",titulo_original,year
 	id_tvdb = thetvdb_api()._id(titulo_original,year)
 	print id_tvdb
 	data = trakt_api().next_episode(id_tvdb)
@@ -1542,14 +1588,13 @@ def listar_seguir():
 			infolabels = {"Title": match[0][0]}
 			addDir_filme(match[0][0],match[0][1],10,match[0][2],infolabels,fanart_rato_tv,len(dircontents),True,'tvshow',None,None)
 			i +=1
+		homepage_view()
 	else:
-		mensagemok('RatoTV','Não está a seguir nenhuma série.')
-	return homepage_view()
+		mensagemok('RatoTV','Não está a seguir nenhuma série.'),sys.exit(0)
 
 ###
 
 def verificar_novos():
-	progresso.create('RatoTv', 'A verificar novos episódios nas séries seguidas','')
 	text = ''
 	seguirpath=os.path.join(datapath,'Seguir')
 	try:
@@ -1557,6 +1602,7 @@ def verificar_novos():
 	except:
 		dircontents=[]
 	if dircontents:
+		progresso.create('RatoTv', 'A verificar novos episódios nas séries seguidas','')
 		i=0
 		while i < len(dircontents):
 			seriename,texto =verificar_novoepisodio_serie(dircontents[i])
@@ -1568,7 +1614,7 @@ def verificar_novos():
 		if text != '':
 			return janela_lateral('Séries seguidas: ',text)
 		else: return xbmc.executebuiltin("XBMC.Notification(RatoTV,"+"Não há novos episódios."+","+"6000"+"," + addonfolder +"/icon.png)")
-	else: return mensagemok('RatoTV','Não está seguir nenhuma série. Se não pretender utilizar','esta funcionalidade pode remover a opção nas definições','do addon. A entrada no addon será mais rápida!')
+	else: pass
 
 def verificar_novoepisodio_serie(txt):
 	text = ''
@@ -1905,7 +1951,7 @@ def teste():
 	pass
 
 def listar_temporadas(name,url,fanart,iconimage,dicionario):
-	temporada = name[-1]
+	temporada = re.compile('.* (\d+)').findall(name)[0]
 	dic = eval(dicionario)
 	episodios_dict = {}
 	for rss in dic[temporada]:
@@ -2085,7 +2131,7 @@ def addDir_filme(name,url,mode,iconimage,infolabels,fanart,totalit,pasta,tipo,HD
     playcount=0
     contextmen = []
     if ADDON.getSetting('download-activo') == "true" and tipo == 'movie' and ADDON.getSetting('folder') != "Escolha a pasta":
-        contextmen.append(('Download[COLOR red] (Avariado)[/COLOR]', 'XBMC.RunPlugin(%s?mode=31&name=%s&url=%s&iconimage=%s&tipo=%s)' % (sys.argv[0], name, url, iconimage,urllib.quote_plus(tipo))))
+        contextmen.append(('Download', 'XBMC.RunPlugin(%s?mode=31&name=%s&url=%s&iconimage=%s&tipo=%s)' % (sys.argv[0], name, url, iconimage,urllib.quote_plus(tipo))))
     else: pass
     contextmen.append(('Estatísticas Trakt', 'XBMC.RunPlugin(%s?mode=30&name=%s&url=%s&iconimage=%s)' % (sys.argv[0], name, url, iconimage)))
     contextmen.append(('Ver detalhes', 'XBMC.Action(Info)'))
@@ -2132,6 +2178,7 @@ def addDir_filme(name,url,mode,iconimage,infolabels,fanart,totalit,pasta,tipo,HD
     if fanart: liz.setProperty('fanart_image', fanart)
     if HD==True: liz.addStreamInfo('video', { 'Codec': 'h264', 'width': 1280, 'height': 720 })
     elif HD==False:  liz.addStreamInfo('video', { 'Codec': 'h264', 'width': 854, 'height': 480 })
+    elif HD=='3D': pass#liz.setProperty('IsStereoscopic',True)
     liz.setInfo( type="Video", infoLabels=infolabels)
     liz.addContextMenuItems(contextmen, replaceItems=True)
     ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=pasta,totalItems=totalit)
@@ -2528,6 +2575,8 @@ elif mode==39: listar_temporadas(name,url,fanart,iconimage,dicionario)
 
 elif mode==40: episodios_opcao(name,url,iconimage,sources,srt,originaltitle,season,episode)
 
+elif mode==41: pesquisa_ano(url)
 
+elif mode==42: menu_ano()
 
 if mode != 9: xbmcplugin.endOfDirectory(int(sys.argv[1]))

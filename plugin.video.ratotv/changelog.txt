@@ -1,3 +1,12 @@
+1.1.0
+-Fix pesquisa (ja nao é necessário voltar atras)
+-Fix opcao externa 3
+-Fix listagem numero temporadas (e.g.naruto)
+-Adicionada listagem de media por ano
+-Fix mensagem entrada se nao estiver a seguir nenhuma serie
+-Fix página seguinte na pesquisa/ano
+-Fix próximo episodio
+
 1.0.21
 -Fix srt qdo nao existe subtitles
 
