@@ -2055,7 +2055,11 @@ def teste(name,url):
 					print "nao encontrou o episodio. FALTA MOSTRAR ERRO"
 	if match[0] == 'movies':
 		print "Movie detectado"
-		pass
+        	html_source_trunk = re.findall('<div class="shortpost(.*?)Adicionar um comentário', html_source, re.DOTALL)
+		infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_source_trunk[0])
+		stream_qualidade(url,name,iconimage)
+	else:
+		print "MENSAGEM DE ERRO FALTA"
 
 
 
@@ -2704,7 +2708,7 @@ elif mode==27: deixar_seguir(url)
 
 elif mode==28: proximo_episodio(url)
 
-elif mode==29: teste("S01E05","http://www.ratotv.net/movies/4688-serpico.html")
+elif mode==29: teste("S01E05","http://www.ratotv.net/movies/4633-iron-sky.html")
 
 elif mode==30: estatisticas_trakt(url)
 
