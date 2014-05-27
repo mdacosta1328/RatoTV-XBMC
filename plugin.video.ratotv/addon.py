@@ -1822,6 +1822,18 @@ class trakt_api:
             data = json_get(url_api)
         except: data = ''
         return data
+
+    def get_showepisode_thumb(self,originaltitle,year,season,episode):
+	screen = ''
+	id_tvdb = thetvdb_api()._id(originaltitle,int(year))
+	json_code = self.shows_season(id_tvdb,int(season))
+	for entry in json_code:
+		if int(entry['episode']) == int(episode):
+			try:
+				screen = entry['screen']
+			except: pass
+			break
+	return screen
 	
 
 
@@ -1996,38 +2008,54 @@ def handle_wait(time_to_wait,title,text,segunda=''):
             return True
 
 def teste(name,url):
-	proceed = False
-	match = re.compile('S(.+?)E(\d+)').findall(name)
 	try:
-		int(match[0][0])
-		int(match[0][1])
-		proceed = True
-	except:
+		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	except: print "ERRO FALTA FAZER",sys.exit(0)
+	match = re.compile('<img src="/templates/ratotvv2/dleimages/comments-img2.png"/><a href="http://www.ratotv.net/(.+?)/">.+?</a>').findall(html_source)
+	print match
+	if match[0] == 'tvshows':
 		proceed = False
-	if proceed:
-		iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,fanart)
-		temporada = match[0][0]
-		episodio = match[0][1]
-		total_seasons = len(serie_dict_temporadas.keys())
-		proceed = False
-		for season in serie_dict_temporadas.keys():
-			if int(season) == int(temporada):	
-				proceed = True
-				break
-		if proceed:
+		match = re.compile('S(.+?)E(\d+)').findall(name)
+		try:
+			int(match[0][0])
+			int(match[0][1])
+			proceed = True
+		except:
 			proceed = False
-			temp,year,episodios_dict = listar_temporadas_get_dictionary(" "+str(int(temporada)),url,"fanart","iconimage",str(serie_dict_temporadas))
-			for episode in episodios_dict.keys():
-				if int(episodio) == int(episode):
+		if proceed:
+			iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,fanart)
+			temporada = match[0][0]
+			episodio = match[0][1]
+			total_seasons = len(serie_dict_temporadas.keys())
+			proceed = False
+			for season in serie_dict_temporadas.keys():
+				if int(season) == int(temporada):	
 					proceed = True
 					break
 			if proceed:
-				if "srt" in episodios_dict[str(int(episodio))].keys():
-					episodios_opcao(name,url,"iconimage",str(episodios_dict[str(int(episodio))]["source"]),str(episodios_dict[str(int(episodio))]["srt"]),originaltitle,temporada,episodio)
+				proceed = False
+				temp,year,episodios_dict = listar_temporadas_get_dictionary(" "+str(int(temporada)),url,"fanart","iconimage",str(serie_dict_temporadas))
+				for episode in episodios_dict.keys():
+					if int(episodio) == int(episode):
+						proceed = True
+						break
+				if proceed:
+					screen = ''
+					if selfAddon.getSetting('series-episode-thumbnails') == 'true':
+						screen = trakt_api().get_showepisode_thumb(originaltitle,year,temporada,episodio)
+					if screen:
+						screenthumb = screen
+					else:
+						screenthumb = str(episodios_dict[str(int(episodio))]["thumbnail"])
+					if "srt" in episodios_dict[str(int(episodio))].keys():
+						episodios_opcao(str(episodios_dict[str(int(episodio))]["description"]),url,screenthumb,str(episodios_dict[str(int(episodio))]["source"]),str(episodios_dict[str(int(episodio))]["srt"]),originaltitle,temporada,episodio)
+					else:
+						episodios_opcao(str(episodios_dict[str(int(episodio))]["description"]),url,screenthumb,str(episodios_dict[str(int(episodio))]["source"]),'',originaltitle,temporada,episodio)
 				else:
-					episodios_opcao(name,url,"iconimage",str(episodios_dict[str(int(episodio))]["source"]),"",originaltitle,temporada,episodio)
-			else:
-				print "nao encontrou o episodio."
+					print "nao encontrou o episodio. FALTA MOSTRAR ERRO"
+	if match[0] == 'movies':
+		print "Movie detectado"
+		pass
 
 
 
@@ -2676,7 +2704,7 @@ elif mode==27: deixar_seguir(url)
 
 elif mode==28: proximo_episodio(url)
 
-elif mode==29: teste("S01E05","http://www.ratotv.net/tvshows/569-orphan-black.html")
+elif mode==29: teste("S01E05","http://www.ratotv.net/movies/4688-serpico.html")
 
 elif mode==30: estatisticas_trakt(url)
 
