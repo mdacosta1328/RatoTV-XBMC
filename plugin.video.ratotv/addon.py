@@ -662,10 +662,18 @@ def series_seasons(url,name,fanart):
 	try:
 		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente \n ou contacte um dos administradores do site.'); match = ''
+	try:
+		#verificar se originaltitle e year estao definidos
+		print originaltitle,year
+		original_year = True
+	except:
+		original_year = False
+	if not original_year:
+		originaltitle=re.compile('<strong>Título Original: </strong>(.+?)</li>').findall(html_source)[0]
+		year = re.compile('<strong>Ano: </strong><a href=".+?">(.+?)</a>').findall(html_source)[0]
 	if selfAddon.getSetting('series-season-poster') == 'true':
 		id_tvdb = thetvdb_api()._id(originaltitle,year)
 		json_code = trakt_api().shows_seasons(id_tvdb)
-		print json_code
 	serie_dict_temporadas = {}
 	match = re.compile('data-list="(.+?)" data-sid=".+?".+?Temporada (.+?) ').findall(html_source)
 	for rss,temporada in match:
@@ -1986,6 +1994,19 @@ def teste():
 	pass
 
 def listar_temporadas(name,url,fanart,iconimage,dicionario):
+	try:
+		#verificar se originaltitle e year estao definidos
+		print originaltitle,year
+		original_year = True
+	except:
+		original_year = False
+	if not original_year:
+		try:
+			html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+		except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente \n ou contacte um dos administradores do site.');sys.exit(0)
+		if html_source:
+			originaltitle=re.compile('<strong>Título Original: </strong>(.+?)</li>').findall(html_source)[0]
+			year = re.compile('<strong>Ano: </strong><a href=".+?">(.+?)</a>').findall(html_source)[0]
 	temporada = re.compile('.* (\d+)').findall(name)[0]
 	dic = eval(dicionario)
 	episodios_dict = {}
@@ -2033,7 +2054,6 @@ def listar_temporadas(name,url,fanart,iconimage,dicionario):
 	if selfAddon.getSetting('series-episode-thumbnails') == 'true':
 		id_tvdb = thetvdb_api()._id(originaltitle,year)
 		json_code = trakt_api().shows_season(id_tvdb,temporada)
-	#print episodios_dict
 	for episodio in sorted(episodios_dict.iterkeys(), key=keyfunc):
 		if selfAddon.getSetting('series-episode-thumbnails') == 'true':
 			for key in json_code:
@@ -2139,7 +2159,10 @@ def addDir_reg_menu(name,url,mode,iconimage,folder,fanart=fanart_rato_tv):
     return ok
 
 def addDir_temporada(name,url,dicionario,mode,iconimage,folder,fanart):
-    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&dicionario="+urllib.quote_plus(dicionario)+"&year="+urllib.quote_plus(year)
+    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&dicionario="+urllib.quote_plus(dicionario)
+    try:
+	u += "&year="+urllib.quote_plus(year)
+    except:pass
     if fanart: u+= '&fanart='+urllib.quote_plus(fanart)
     if originaltitle: u+="&originaltitle="+urllib.quote_plus(originaltitle)
 ###AMELHORAR!
@@ -2158,7 +2181,9 @@ def addDir_temporada(name,url,dicionario,mode,iconimage,folder,fanart):
     return ok
 
 def addDir_filme(name,url,mode,iconimage,infolabels,fanart,totalit,pasta,tipo,HD,favorito):
-    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&iconimage="+urllib.quote_plus(iconimage)+"&tipo="+urllib.quote_plus(tipo)+"&year="+infolabels['Year']
+    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&iconimage="+urllib.quote_plus(iconimage)+"&tipo="+urllib.quote_plus(tipo)
+    try: u += "&year="+infolabels['Year']
+    except: pass
     try: u += "&imdb_id="+infolabels['code']
     except: pass
     try: u += "&originaltitle="+infolabels['originaltitle']

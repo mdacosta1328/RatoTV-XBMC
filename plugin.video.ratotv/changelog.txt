@@ -1,3 +1,6 @@
+1.1.2
+-Fix erros da versao anterior
+
 1.1.1
 -Adicionados posters de temporada (trakt)
 -Adicionado thumbnails de episodio (trakt)
