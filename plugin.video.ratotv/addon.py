@@ -1994,6 +1994,7 @@ def teste():
 	pass
 
 def listar_temporadas(name,url,fanart,iconimage,dicionario):
+	print "URLLLLLLL",url
 	try:
 		#verificar se originaltitle e year estao definidos
 		print originaltitle,year
@@ -2055,19 +2056,26 @@ def listar_temporadas(name,url,fanart,iconimage,dicionario):
 		id_tvdb = thetvdb_api()._id(originaltitle,year)
 		json_code = trakt_api().shows_season(id_tvdb,temporada)
 	for episodio in sorted(episodios_dict.iterkeys(), key=keyfunc):
+		screenimage = None
+		print "episodio:",episodio
 		if selfAddon.getSetting('series-episode-thumbnails') == 'true':
+			print "Numero total de keys no json_code",len(json_code)
+			aval = 0
 			for key in json_code:
 				if str(key['episode']) == str(episodio):
-					try: screenimage = key['images']['screen']
+					try: screenimage = key['images']['screen'];screen_checker = True
 					except:screenimage = str(episodios_dict[episodio]["thumbnail"])
+				aval +=1
+			if aval == len(json_code) and screenimage == None:
+				screenimage = str(episodios_dict[episodio]["thumbnail"])
+			else:pass
 		else:
 			screenimage = str(episodios_dict[episodio]["thumbnail"])
 		if "srt" in episodios_dict[episodio].keys():
 			addDir_episodio(name,"[B][COLOR green]Episódio " + str(episodio) + "[/B][/COLOR]",str(episodios_dict[episodio]["description"]),url,temporada,episodio,str(episodios_dict[episodio]["source"]),str(episodios_dict[episodio]["srt"]),screenimage,fanart)
 		else:
 			addDir_episodio(name,"[B][COLOR green]Episódio " + str(episodio) + "[/B][/COLOR]",str(episodios_dict[episodio]["description"]),url,temporada,episodio,str(episodios_dict[episodio]["source"]),"",screenimage,fanart)
-	#episodes_view()
-	xbmc.executebuiltin("Container.SetViewMode(500)")
+	episodes_view()
 
 def keyfunc(key): return float(key.replace(" e ","."))
 
