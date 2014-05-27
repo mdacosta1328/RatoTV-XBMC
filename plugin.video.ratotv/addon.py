@@ -64,6 +64,7 @@ def Menu_principal():
         addDir_reg_menu('Filmes','url',1,artfolder+'filmes.jpg',True)
         addDir_reg_menu('Séries',base_url,8,artfolder+'series.jpg',True)
         addDir_reg_menu('Pedidos',"http://www.ratotv.net/requests/page/1/",33,artfolder+'contactar.jpg',True)
+        addDir_reg_menu('Teste',"http://www.ratotv.net/requests/page/1/",29,artfolder+'contactar.jpg',False)
 
         addDir_reg_menu('Pesquisar','url',4,artfolder+'pesquisa.jpg',True)
         addDir_reg_menu('','','',addonfolder+'logo.png',False)
@@ -658,7 +659,7 @@ def rato_tv_get_media_info(html_trunk):
     if name == '{title}': data_dict['Title'] = data_dict['originaltitle']
     return data_dict,data_dict['Title'],url,thumbnail,fanart,filme_ou_serie,HD,favorito
 
-def series_seasons(url,name,fanart):
+def series_seasons_get_dictionary(url,name,fanart):
 	try:
 		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente \n ou contacte um dos administradores do site.'); match = ''
@@ -685,6 +686,10 @@ def series_seasons(url,name,fanart):
 	for temporada,rss in match:
 		try: serie_dict_temporadas[temporada].append(rss)
 		except: serie_dict_temporadas[temporada] = [rss]
+	return iconimage,originaltitle,year,serie_dict_temporadas
+
+def series_seasons(url,name,fanart):
+	iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,fanart)
 	for season in sorted(serie_dict_temporadas.iterkeys(),key=int):
 		if selfAddon.getSetting('series-season-poster') == 'true':
 			try:
@@ -1990,11 +1995,43 @@ def handle_wait(time_to_wait,title,text,segunda=''):
 	    progresso.close()
             return True
 
-def teste():
-	pass
+def teste(name,url):
+	proceed = False
+	match = re.compile('S(.+?)E(\d+)').findall(name)
+	try:
+		int(match[0][0])
+		int(match[0][1])
+		proceed = True
+	except:
+		proceed = False
+	if proceed:
+		iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,fanart)
+		temporada = match[0][0]
+		episodio = match[0][1]
+		total_seasons = len(serie_dict_temporadas.keys())
+		proceed = False
+		for season in serie_dict_temporadas.keys():
+			if int(season) == int(temporada):	
+				proceed = True
+				break
+		if proceed:
+			proceed = False
+			temp,year,episodios_dict = listar_temporadas_get_dictionary(" "+str(int(temporada)),url,"fanart","iconimage",str(serie_dict_temporadas))
+			for episode in episodios_dict.keys():
+				if int(episodio) == int(episode):
+					proceed = True
+					break
+			if proceed:
+				if "srt" in episodios_dict[str(int(episodio))].keys():
+					episodios_opcao(name,url,"iconimage",str(episodios_dict[str(int(episodio))]["source"]),str(episodios_dict[str(int(episodio))]["srt"]),originaltitle,temporada,episodio)
+				else:
+					episodios_opcao(name,url,"iconimage",str(episodios_dict[str(int(episodio))]["source"]),"",originaltitle,temporada,episodio)
+			else:
+				print "nao encontrou o episodio."
 
-def listar_temporadas(name,url,fanart,iconimage,dicionario):
-	print "URLLLLLLL",url
+
+
+def listar_temporadas_get_dictionary(name,url,fanart,iconimage,dicionario):
 	try:
 		#verificar se originaltitle e year estao definidos
 		print originaltitle,year
@@ -2052,6 +2089,10 @@ def listar_temporadas(name,url,fanart,iconimage,dicionario):
 				try:episodios_dict[title[0]]["srt"].append(sub[0])
 				except:episodios_dict[title[0]]["srt"]=[sub[0]]
 		except: pass
+	return temporada,year,episodios_dict
+
+def listar_temporadas(name,url,fanart,iconimage,dicionario):
+	temporada,year,episodios_dict = listar_temporadas_get_dictionary(name,url,fanart,iconimage,dicionario)
 	if selfAddon.getSetting('series-episode-thumbnails') == 'true':
 		id_tvdb = thetvdb_api()._id(originaltitle,year)
 		json_code = trakt_api().shows_season(id_tvdb,temporada)
@@ -2635,7 +2676,7 @@ elif mode==27: deixar_seguir(url)
 
 elif mode==28: proximo_episodio(url)
 
-elif mode==29: teste()
+elif mode==29: teste("S01E05","http://www.ratotv.net/tvshows/569-orphan-black.html")
 
 elif mode==30: estatisticas_trakt(url)
 
