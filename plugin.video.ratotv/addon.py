@@ -61,6 +61,7 @@ VERSION = "1.1.0" #<---- PLUGIN VERSION
 def Menu_principal():
     login_sucessful = check_login()
     if login_sucessful == True:
+	addDir_reg_menu('Menu Teste','url',47,artfolder+'filmes.jpg',False)
         addDir_reg_menu('Filmes','url',1,artfolder+'filmes.jpg',True)
         addDir_reg_menu('Séries',base_url,8,artfolder+'series.jpg',True)
         addDir_reg_menu('Pedidos',"http://www.ratotv.net/requests/page/1/",33,artfolder+'contactar.jpg',True)
@@ -2007,6 +2008,51 @@ def handle_wait(time_to_wait,title,text,segunda=''):
             return True
 
 ####Subscricoes
+
+def transferir_biblioteca_filmes():
+	coiso = True
+	url_current = base_url + 'movies/page/1/'
+	if not xbmcvfs.exists(os.path.join(datapath,'movie-subscriptions')):
+		xbmcvfs.mkdir(os.path.join(datapath,'movie-subscriptions'))
+	if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'movies')):
+		xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'movies'))
+	try:
+		html_source=post_page(url_current,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	except: html_source = ''
+	if html_source:
+		print "existe html_source"
+		current_page= re.compile('/page/(\d+)/').findall(url_current)[0]
+		if not current_page: current_page = str(1)
+		pag_seguinte = re.compile('<div class="next"><a href="(.+?)">').findall(html_source)[0]
+		try: total_paginas = re.compile('.*<a href=".+?">(.+?)</a>\n<div class="next">').findall(html_source)[0]
+		except: total_paginas=re.compile('.*/page/(.+?)/">(.+?)</a> ').findall(html_source)[0]
+		#print current_page,total_paginas, pag_seguinte
+		current_page = int(current_page)
+		html_source_trunk = re.findall('<div class="shortpost">(.*?)<\/div>\n<\/div>\n<\/div>', html_source, re.DOTALL)
+		while int(current_page) < int(total_paginas):
+			print "Aqui",current_page
+			if current_page != 1:
+				try:
+					html_source=post_page(pag_seguinte,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+				except: html_source = ''
+				pag_seguinte = re.compile('<div class="next"><a href="(.+?)">').findall(html_source)[0]
+				html_source_trunk = re.findall('<div class="shortpost">(.*?)<\/div>\n<\/div>\n<\/div>', html_source, re.DOTALL)
+			for trunk in html_source_trunk:
+				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(trunk)
+				if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')')):
+					xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')'))
+				strm_filme = os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')',infolabels['originaltitle']+'.strm')
+				strm_contents = 'plugin://plugin.video.ratotv/?url=' + url +'&mode=44&name=' + urllib.quote_plus(infolabels['originaltitle'])
+				save(strm_filme,strm_contents)
+			current_page +=1
+	xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
+			
+			
+			
+			
+		
+	
+	
 
 def listar_series_subscritas():
 	folder = os.path.join(datapath,'tvshows-subscriptions')
