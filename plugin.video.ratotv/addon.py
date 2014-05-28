@@ -61,7 +61,7 @@ VERSION = "1.1.0" #<---- PLUGIN VERSION
 def Menu_principal():
     login_sucessful = check_login()
     if login_sucessful == True:
-	addDir_reg_menu('Menu Teste','url',48,artfolder+'filmes.jpg',False)
+	addDir_reg_menu('Menu Teste','url',47,artfolder+'filmes.jpg',False)
         addDir_reg_menu('Filmes','url',1,artfolder+'filmes.jpg',True)
         addDir_reg_menu('Séries',base_url,8,artfolder+'series.jpg',True)
         addDir_reg_menu('Pedidos',"http://www.ratotv.net/requests/page/1/",33,artfolder+'contactar.jpg',True)
@@ -2039,17 +2039,15 @@ def transferir_biblioteca_filmes(name):
 
 	canceled = False
 	comando = name
-	if comando != 'todos' or comando != 'novos':
-		comando = 'todos'
 	url_current = base_url + 'movies/page/1/'
 	movie_database_folder = os.path.join(datapath,'movie-subscriptions')
 
 	#verifica se ja transferiu a biblioteca anteriormente para o service.py funcionar devidamente e não tornar o xbmc lento	
 
-	#if comando == 'novos':
-	#	if not xbmcvfs.exists(movie_database_folder):
-	#		ok=mensagemok('RatoTV','Tem o serviço de procura de novos filmes activo.','Mas nao transferiu a biblioteca...','Saindo.')
-	#		sys.exit(0)
+	if comando == 'novos':
+		if not xbmcvfs.exists(movie_database_folder):
+			ok=mensagemok('RatoTV','Tem o serviço de procura de novos filmes activo.','Mas nao transferiu a biblioteca...','Saindo.')
+			sys.exit(0)
 
 	if not xbmcvfs.exists(movie_database_folder):
 		xbmcvfs.mkdir(movie_database_folder)
@@ -2059,7 +2057,6 @@ def transferir_biblioteca_filmes(name):
 		html_source=post_page(url_current,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: html_source = ''
 	if html_source:
-		print "existe html_source"
 		current_page= re.compile('/page/(\d+)/').findall(url_current)[0]
 		if not current_page: current_page = str(1)
 		pag_seguinte = re.compile('<div class="next"><a href="(.+?)">').findall(html_source)[0]
@@ -2069,12 +2066,14 @@ def transferir_biblioteca_filmes(name):
 		html_source_trunk = re.findall('<div class="shortpost">(.*?)<\/div>\n<\/div>\n<\/div>', html_source, re.DOTALL)
 		if comando == 'todos':
 			progresso.create('RatoTV - Biblioteca XBMC', 'A transferir biblioteca de Filmes...Aguarde...' ,'Página '+str(current_page)+'/'+str(total_paginas))
+		i=0
 		while int(current_page) < int(total_paginas):
-			if progresso.iscanceled():
-				canceled = True
-				progresso.update(100,"Cancelando...")	
-				progresso.close()
-				break
+			if comando == 'todos':
+				if progresso.iscanceled():
+					canceled = True
+					progresso.update(100,"Cancelando...")	
+					progresso.close()
+					break
 			if current_page != 1:
 				try:
 					html_source=post_page(pag_seguinte,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
@@ -2093,13 +2092,16 @@ def transferir_biblioteca_filmes(name):
 				movie_database_file = os.path.join(movie_database_folder,id_ratotv+'.txt')
 
 			#verifica se o filme ja existe na biblioteca para interromper o ciclo caso esteja à procura de filmes novos 
-				#if comando == 'novos':
-				#	if xbmcvfs.exists(movie_database_file):
-				#		break					
+				if comando == 'novos':
+					if xbmcvfs.exists(movie_database_file):
+						current_page = int(total_paginas)
+						break
 			#salva ficheiro na userdata para saber se item ja foi transferido anteriormente
-				save(movie_database_file,'check')
+				if not xbmcvfs.exists(movie_database_file):
+					save(movie_database_file,'check')
 			#salva stream
-				save(strm_filme,strm_contents)
+					save(strm_filme,strm_contents)
+					i +=1
 
 			current_page +=1
 			if comando == 'todos':
@@ -2107,7 +2109,7 @@ def transferir_biblioteca_filmes(name):
 	if comando == 'todos' and not canceled:
 		progresso.update(100,'Tarefa realizada com sucesso')
 		progresso.close()
-	if not canceled:
+	if not canceled and i >1:
 		xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
 			
 	
@@ -2194,7 +2196,6 @@ def play_from_outside(name,url):
 		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: print "ERRO FALTA FAZER",sys.exit(0)
 	match = re.compile('<img src="/templates/ratotvv2/dleimages/comments-img2.png"/><a href="http://www.ratotv.net/(.+?)/">.+?</a>').findall(html_source)
-	print match
 	if match[0] == 'tvshows':
 		proceed = False
 		match = re.compile('S(.+?)E(\d+)').findall(name)
@@ -2263,7 +2264,6 @@ def listar_temporadas_get_dictionary(name,url,fanart,iconimage,dicionario):
 	dic = eval(dicionario)
 	episodios_dict = {}
 	for rss in dic[temporada]:
-		print "A abrir", rss
    		try:
           		htmll_source = abrir_url(rss, encoding='iso-8859-1')
             		items = re.findall('<item>(.*?)</item>', htmll_source, re.DOTALL)
@@ -2312,9 +2312,7 @@ def listar_temporadas(name,url,fanart,iconimage,dicionario):
 		json_code = trakt_api().shows_season(id_tvdb,temporada)
 	for episodio in sorted(episodios_dict.iterkeys(), key=keyfunc):
 		screenimage = None
-		print "episodio:",episodio
 		if selfAddon.getSetting('series-episode-thumbnails') == 'true':
-			print "Numero total de keys no json_code",len(json_code)
 			aval = 0
 			for key in json_code:
 				if str(key['episode']) == str(episodio):
@@ -2335,7 +2333,6 @@ def listar_temporadas(name,url,fanart,iconimage,dicionario):
 def keyfunc(key): return float(key.replace(" e ","."))
 
 def episodios_opcao(name,url,iconimage,sources,srt,originaltitle,season,episode):
-	print "name",name,"seriesname",seriesName,"originaltitle",originaltitle
 	if "COLOR green" in originaltitle: originaltitle = get_original_title(url)
 	infolabels = { "Title": name , "TVShowTitle":originaltitle,"Season":season, "Episode":episode }
 	source=eval(sources)
