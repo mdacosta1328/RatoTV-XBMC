@@ -1245,12 +1245,25 @@ def estatisticas_trakt(url):
 
 
 #class 2 qualidades
-
 def janela2qualidades():
-	ui = qualidades_duas('2qualidades.xml',addonfolder,'Default','')
-	ui.doModal()
-	del ui
-	return
+	if selfAddon.getSetting('fonte-auto') == "false":
+		ui = qualidades_duas('2qualidades.xml',addonfolder,'Default','')
+		ui.doModal()
+		del ui
+		return
+	else:
+		try: save(datapath + "option.txt","")
+		except:
+			try:
+				os.mkdir( datapath , 0777 )
+				save(datapath + "option.txt","")
+			except: pass
+		if selfAddon.getSetting('host1') == "Opção 1":
+			save(datapath + "option.txt","1")
+		if selfAddon.getSetting('host1') == "Opção 2" or selfAddon.getSetting('host1') == "Opção 3":
+			save(datapath + "option.txt","2")			
+		return
+		
 
 class qualidades_duas(xbmcgui.WindowXMLDialog):
     def __init__(self,strXMLname, strFallbackPath, strDefaultName, forceFallback):
@@ -1281,13 +1294,27 @@ class qualidades_duas(xbmcgui.WindowXMLDialog):
 
 
 #class 3 qualidades
-
 def janela3qualidades():
-	ui = qualidades('3qualidades.xml',addonfolder,'Default','')
-	ui.doModal()
-	del ui
-	return
-
+	if selfAddon.getSetting('fonte-auto') == "false":
+		ui = qualidades('3qualidades.xml',addonfolder,'Default','')
+		ui.doModal()
+		del ui
+		return
+	else:
+		try: save(datapath + "option.txt","")
+		except:
+			try:
+				os.mkdir( datapath , 0777 )
+				save(datapath + "option.txt","")
+			except: pass
+		if selfAddon.getSetting('host1') == "Opção 1":
+			save(datapath + "option.txt","1")
+		if selfAddon.getSetting('host1') == "Opção 2":
+			save(datapath + "option.txt","2")
+		if selfAddon.getSetting('host1') == "Opção 3":
+			save(datapath + "option.txt","3")			
+		return
+	
 class qualidades(xbmcgui.WindowXMLDialog):
     def __init__(self,strXMLname, strFallbackPath, strDefaultName, forceFallback):
 	try:
