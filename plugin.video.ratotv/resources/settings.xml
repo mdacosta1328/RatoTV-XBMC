@@ -5,8 +5,14 @@
       <setting id="login_name" type="text" label="Username" default=""/>
       <setting id="login_password" type="text" label="Password" default="" option="hidden" enable="!eq(-1,false)"/>
       <setting id="mensagem-site" type="bool" label="Activar mensagem de informação do site" default="true"/>
+      <setting id="subtitles-active" type="bool" label="Activar legendas do site" default="true"/>      
       <setting id="qualidade-auto" type="bool" label="Escolher a melhor qualidade automaticamente" default="false"/>
-      <setting id="subtitles-active" type="bool" label="Activar legendas do site" default="true"/>
+      <setting type="sep" />      
+      <setting id="fonte-auto" type="bool" label="Escolher fonte automaticamente" default="false"/>   
+      <setting id="host1" type="labelenum" label="Prioridade 1" values="-|Opção 1|Opção 2|Opção 3" default="Opção 1"/>
+		<setting id="host2" type="labelenum" label="Prioridade 2" values="-|Opção 1|Opção 2|Opção 3" default="Opção 2"/>
+		<setting id="host3" type="labelenum" label="Prioridade 3" values="-|Opção 1|Opção 2|Opção 3" default="Opção 3"/>
+      <setting type="sep" />		
       <setting id="novos-episodios" type="bool" label="Procurar novos episodios no login" default="true"/>
       <setting id="votar-stopped" type="bool" label="Classificar media apos visualizacao" default="true"/>
       <setting id="mensagem-pedidos" type="bool" label="Apresentar mensagem de instruções para pedidos" default="true"/>
