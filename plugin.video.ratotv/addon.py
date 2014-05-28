@@ -285,8 +285,7 @@ def stream_qualidade(url,name,iconimage):
         		choose=escolher_qualidade('Seleccione a qualidade',titles)
        			if choose > -1:
             			linkescolha=player_rato(url_movie_file[choose]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
-    			else:
-        			linkescolha=player_rato(url_movie_file[0]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
+    		else: linkescolha=player_rato(url_movie_file[0]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
 	elif opcao == "10":
 		sys.exit(0)
 	else:
