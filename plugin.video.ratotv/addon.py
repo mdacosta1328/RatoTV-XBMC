@@ -21,9 +21,7 @@ from __future__ import division
 import urllib,urllib2,re,xbmcplugin,xbmcgui,xbmcvfs,xbmc,xbmcaddon,HTMLParser,json,os,time,datetime,binascii
 from t0mm0.common.addon import Addon
 
-
 h = HTMLParser.HTMLParser()
-
 
 addon_id = 'plugin.video.ratotv'
 selfAddon = xbmcaddon.Addon(id=addon_id)
@@ -32,7 +30,6 @@ artfolder = addonfolder+'/resources/img/'
 addon = Addon(addon_id)
 datapath = addon.get_profile()
 ADDON = selfAddon
-
 
 base_url = 'http://www.ratotv.net/'
 escolher_qualidade = xbmcgui.Dialog().select
@@ -52,7 +49,6 @@ if selfAddon.getSetting('ga_visitor')=='':
 PATH = "ratotv"  #<---- PLUGIN NAME MINUS THE "plugin.video"
 UATRACK="UA-41937813-3" #<---- GOOGLE ANALYTICS UA NUMBER
 VERSION = "1.1.0" #<---- PLUGIN VERSION
-
 
 ######################################################################################################
 #                                               MENUS                                                #
@@ -82,7 +78,6 @@ def Menu_principal():
         addDir_reg_menu('Alterar Definições','url',9,artfolder+'definicoes.jpg',False)
         addDir_reg_menu('Tentar Novamente','url',None,artfolder+'refresh.jpg',True)
         menu_view()
-
 
 def Menu_principal_series():
     addDir_reg_menu('Todas as séries',base_url + 'index.php?cstart=1&do=cat&category=tvshows',2,artfolder+'series.jpg',True)
@@ -140,8 +135,6 @@ def menu_ano():
 	addDir_reg_menu('[B][COLOR green]Introduzir ano manualmente[/B][/COLOR]','url',41,artfolder+'pesquisa.jpg',True)
 	for i in reversed(xrange(1900,2015)):
 		addDir_reg_menu(str(i),base_url + 'tags/' + str(i) + '/page/1/',16,artfolder+'pesquisa.jpg',True)
-
-	
 
 ##################################################################################################################################
 #                                                       FUNCOES LISTAGEM                                                         #
@@ -259,54 +252,110 @@ def stream_qualidade(url,name,iconimage):
 	num_opcoes = len(opcao)
 	if num_opcoes == 1: opcao = "1"
 	elif num_opcoes == 2:
-		janela2qualidades()
+		janela2qualidades("")
 		opcao = readfile(datapath + "option.txt")
 	elif num_opcoes == 3:
-		janela3qualidades()
+		janela3qualidades("")
 		opcao = readfile(datapath + "option.txt")
 	else: ok=mensagemok('RatoTV','Ocorreu um erro. Tente novamente.')
-	if opcao == "1":
-		try:
-			rss_source = abrir_url(urllib.quote(rssopcao[0], safe=":/"))
-		except: ok=mensagemok('RatoTV','Não foi possível abrir o feed da opção 1')
-		try:
-        		match = re.compile('<jwplayer:source file="(.+?)" label="(.+?)" />').findall(rss_source)
-        		for movie_file,quality in match:
-            			titles.append('[B]' + quality + '[/B]')
-            			url_movie_file.append(movie_file)
-    		except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente ou contacte um dos administradores do site.')
-    		try:
-        		subs = re.compile('<jwplayer:track file="../(.+?)" label=".+?').findall(rss_source)
-        		if len(subs) >= 1: subs = base_url + str(subs[0])
-        		else: subs = ''
-    		except: subs = ''
-   		print titles,url_movie_file,subs
-    		if selfAddon.getSetting('qualidade-auto') == "false":
-        		choose=escolher_qualidade('Seleccione a qualidade',titles)
-       			if choose > -1:
-            			linkescolha=player_rato(url_movie_file[choose]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
-    		else: linkescolha=player_rato(url_movie_file[0]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
-	elif opcao == "10":
+	if opcao == "10":
 		sys.exit(0)
+	if selfAddon.getSetting('fonte-auto') == "true":
+		try:
+			rss_source = abrir_url(urllib.quote(rssopcao[int(opcao)-1], safe=":/"))
+		except:
+			try:
+				if num_opcoes == 2:
+					janela2qualidades("1")
+					opcao = readfile(datapath + "option.txt")
+				elif num_opcoes == 3:
+					janela3qualidades("1")
+					opcao = readfile(datapath + "option.txt")			
+				rss_source = abrir_url(urllib.quote(rssopcao[int(opcao)-1], safe=":/"))
+			except:
+				try:
+					if num_opcoes == 2:
+						janela2qualidades("2")
+						opcao = readfile(datapath + "option.txt")
+					elif num_opcoes == 3:
+						janela3qualidades("2")
+						opcao = readfile(datapath + "option.txt")			
+					rss_source = abrir_url(urllib.quote(rssopcao[int(opcao)-1], safe=":/"))
+				except: ok=mensagemok('RatoTV','Ocorreu um erro. Tente novamente.')
+		if opcao == "1":
+			try:
+				match = re.compile('<jwplayer:source file="(.+?)" label="(.+?)" />').findall(rss_source)
+				for movie_file,quality in match:
+						titles.append('[B]' + quality + '[/B]')
+						url_movie_file.append(movie_file)
+			except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente ou contacte um dos administradores do site.')
+			try:
+				subs = re.compile('<jwplayer:track file="../(.+?)" label=".+?').findall(rss_source)
+				if len(subs) >= 1: subs = base_url + str(subs[0])
+				else: subs = ''
+			except: subs = ''
+			print titles,url_movie_file,subs
+			if selfAddon.getSetting('qualidade-auto') == "false":
+				choose=escolher_qualidade('Seleccione a qualidade',titles)
+				if choose > -1:
+						linkescolha=player_rato(url_movie_file[choose]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
+			else:
+				linkescolha=player_rato(url_movie_file[0]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
+		else:
+			if rss_source:
+				hash_movie = re.compile('<location>ratotv*(.+?)</location>').findall(rss_source)[0].replace("*","")
+			else: ok=mensagemok('RatoTV','Não conseguiu obter a hash.')
+			try:
+				decoded_url = resolver_externos(hash_movie)
+			except: ok=mensagemok('RatoTV','Não conseguiu resolver a hash.')
+			try:
+					subs = re.compile('<captions.files>../(.+?)</captions.files>').findall(rss_source)
+					if len(subs) >= 1: subs = base_url + str(subs[0])
+					else: subs = ''
+			except: subs = ''
+			player_rato(decoded_url,subs,name,url,iconimage,'',None,None)				
 	else:
-		try:
-			rss_escolhido = int(opcao)-1;print rss_escolhido
-			rss_source = abrir_url(urllib.quote(rssopcao[rss_escolhido], safe=":/"))
-		except: ok=mensagemok('RatoTV','Não foi possível abrir o feed da opção 1')
-		print rss_source
-		if rss_source:
-			hash_movie = re.compile('<location>ratotv*(.+?)</location>').findall(rss_source)[0].replace("*","")
-		else: ok=mensagemok('RatoTV','Não conseguiu obter a hash.')
-		try:
-			decoded_url = resolver_externos(hash_movie)
-		except: ok=mensagemok('RatoTV','Não conseguiu resolver a hash.')
-		try:
-        		subs = re.compile('<captions.files>../(.+?)</captions.files>').findall(rss_source)
-        		if len(subs) >= 1: subs = base_url + str(subs[0])
-        		else: subs = ''
-    		except: subs = ''
-		print subs
-		player_rato(decoded_url,subs,name,url,iconimage,'',None,None)
+		if opcao == "1":
+			try:
+				rss_source = abrir_url(urllib.quote(rssopcao[0], safe=":/"))
+			except: ok=mensagemok('RatoTV','Não foi possível abrir o feed da opção 1')
+			try:
+					match = re.compile('<jwplayer:source file="(.+?)" label="(.+?)" />').findall(rss_source)
+					for movie_file,quality in match:
+							titles.append('[B]' + quality + '[/B]')
+							url_movie_file.append(movie_file)
+			except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente ou contacte um dos administradores do site.')
+			try:
+				subs = re.compile('<jwplayer:track file="../(.+?)" label=".+?').findall(rss_source)
+				if len(subs) >= 1: subs = base_url + str(subs[0])
+				else: subs = ''
+			except: subs = ''
+			print titles,url_movie_file,subs
+			if selfAddon.getSetting('qualidade-auto') == "false":
+				choose=escolher_qualidade('Seleccione a qualidade',titles)
+				if choose > -1:
+						linkescolha=player_rato(url_movie_file[choose]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
+			else:
+				linkescolha=player_rato(url_movie_file[0]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
+		else:
+			try:
+				rss_escolhido = int(opcao)-1;print rss_escolhido
+				rss_source = abrir_url(urllib.quote(rssopcao[rss_escolhido], safe=":/"))
+			except: ok=mensagemok('RatoTV','Não foi possível abrir o feed da opção 1')
+			print rss_source
+			if rss_source:
+				hash_movie = re.compile('<location>ratotv*(.+?)</location>').findall(rss_source)[0].replace("*","")
+			else: ok=mensagemok('RatoTV','Não conseguiu obter a hash.')
+			try:
+				decoded_url = resolver_externos(hash_movie)
+			except: ok=mensagemok('RatoTV','Não conseguiu resolver a hash.')
+			try:
+					subs = re.compile('<captions.files>../(.+?)</captions.files>').findall(rss_source)
+					if len(subs) >= 1: subs = base_url + str(subs[0])
+					else: subs = ''
+			except: subs = ''
+			print subs
+			player_rato(decoded_url,subs,name,url,iconimage,'',None,None)
 
 
 def player_rato(video,subs,name,url,iconimage,infolabels,season,episode):
@@ -482,10 +531,6 @@ def filmes_homepage(name,url):
     else:pass
     homepage_view()
 
-
-
-
-
 def listar_media(url,mode):
     try:
         html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
@@ -517,9 +562,6 @@ def listar_media(url,mode):
             addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas[0][0]+ ') | Próxima >>>[/COLOR]',pag_seguinte[0].replace('amp;',''),mode,artfolder+'seta.jpg',True)
         except:pass
     moviesandseries_view()
-
-
-
 
 def listar_pesquisa(url):
 	URLpesquisa = urllib.unquote(url)
@@ -721,10 +763,10 @@ def download_qualidade(url,name,iconimage):
 		num_opcoes = len(opcao)
 		if num_opcoes == 1: opcao = "1"
 		elif num_opcoes == 2:
-			janela2qualidades()
+			janela2qualidades("")
 			opcao = readfile(datapath + "option.txt")
 		elif num_opcoes == 3:
-			janela3qualidades()
+			janela3qualidades("")
 			opcao = readfile(datapath + "option.txt")
 		else: ok=mensagemok('RatoTV','Ocorreu um erro. Tente novamente.')
 		if opcao == "1":
@@ -777,7 +819,6 @@ def download_qualidade(url,name,iconimage):
  	#downloader = downloader.SimpleDownloader()
 	#params = {"url": videos, "download_path": "/home/miguel/Documentos/eultra", "Title": "Coiso"}
  	#downloader.download("bun.mp4", params)
-
 
 def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 	print subs,video
@@ -847,8 +888,6 @@ def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 	except:
 		progresso.close()
 		mensagemok('RatoTV','Não conseguiu obter resposta do servidor. Servers sobrecarregados.')
-
-
 
 def check_login():
     if selfAddon.getSetting('login_name') == '' or selfAddon.getSetting('login_password') == '':
@@ -959,8 +998,6 @@ def comment(url):
                 req.add_header('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
                 page=urllib2.urlopen(req).read()
                 return mensagemok('RatoTV','Comentário enviado com sucesso.')
-
-
 
 def ler_comentarios(url,todos_os_comentarios):
     print url
@@ -1244,24 +1281,51 @@ def estatisticas_trakt(url):
 
 
 #class 2 qualidades
-def janela2qualidades():
+def janela2qualidades(prioridade):
+	print '##333'+prioridade
 	if selfAddon.getSetting('fonte-auto') == "false":
 		ui = qualidades_duas('2qualidades.xml',addonfolder,'Default','')
 		ui.doModal()
 		del ui
 		return
 	else:
-		try: save(datapath + "option.txt","")
-		except:
-			try:
-				os.mkdir( datapath , 0777 )
-				save(datapath + "option.txt","")
-			except: pass
-		if selfAddon.getSetting('host1') == "Opção 1":
-			save(datapath + "option.txt","1")
-		if selfAddon.getSetting('host1') == "Opção 2" or selfAddon.getSetting('host1') == "Opção 3":
-			save(datapath + "option.txt","2")			
-		return
+		if prioridade == "":
+			try: save(datapath + "option.txt","")
+			except:
+				try:
+					os.mkdir( datapath , 0777 )
+					save(datapath + "option.txt","")
+				except: pass
+			if selfAddon.getSetting('host1') == "Opção 1":
+				save(datapath + "option.txt","1")
+			if selfAddon.getSetting('host1') == "Opção 2" or selfAddon.getSetting('host1') == "Opção 3":
+				save(datapath + "option.txt","2")			
+			return
+		if prioridade == "1":
+			print "prio1"
+			try: save(datapath + "option.txt","")
+			except:
+				try:
+					os.mkdir( datapath , 0777 )
+					save(datapath + "option.txt","")
+				except: pass
+			if selfAddon.getSetting('host2') == "Opção 1":
+				save(datapath + "option.txt","1")
+			if selfAddon.getSetting('host2') == "Opção 2" or selfAddon.getSetting('host2') == "Opção 3":
+				save(datapath + "option.txt","2")			
+			return
+		if prioridade == "2":
+			try: save(datapath + "option.txt","")
+			except:
+				try:
+					os.mkdir( datapath , 0777 )
+					save(datapath + "option.txt","")
+				except: pass
+			if selfAddon.getSetting('host3') == "Opção 1":
+				save(datapath + "option.txt","1")
+			if selfAddon.getSetting('host3') == "Opção 2" or selfAddon.getSetting('host3') == "Opção 3":
+				save(datapath + "option.txt","2")			
+			return
 		
 
 class qualidades_duas(xbmcgui.WindowXMLDialog):
@@ -1293,26 +1357,55 @@ class qualidades_duas(xbmcgui.WindowXMLDialog):
 
 
 #class 3 qualidades
-def janela3qualidades():
+def janela3qualidades(prioridade):
 	if selfAddon.getSetting('fonte-auto') == "false":
 		ui = qualidades('3qualidades.xml',addonfolder,'Default','')
 		ui.doModal()
 		del ui
 		return
 	else:
-		try: save(datapath + "option.txt","")
-		except:
-			try:
-				os.mkdir( datapath , 0777 )
-				save(datapath + "option.txt","")
-			except: pass
-		if selfAddon.getSetting('host1') == "Opção 1":
-			save(datapath + "option.txt","1")
-		if selfAddon.getSetting('host1') == "Opção 2":
-			save(datapath + "option.txt","2")
-		if selfAddon.getSetting('host1') == "Opção 3":
-			save(datapath + "option.txt","3")			
-		return
+		if prioridade == "":
+			try: save(datapath + "option.txt","")
+			except:
+				try:
+					os.mkdir( datapath , 0777 )
+					save(datapath + "option.txt","")
+				except: pass
+			if selfAddon.getSetting('host1') == "Opção 1":
+				save(datapath + "option.txt","1")
+			if selfAddon.getSetting('host1') == "Opção 2":
+				save(datapath + "option.txt","2")
+			if selfAddon.getSetting('host1') == "Opção 3":
+				save(datapath + "option.txt","3")			
+			return
+		if prioridade == "1":
+			try: save(datapath + "option.txt","")
+			except:
+				try:
+					os.mkdir( datapath , 0777 )
+					save(datapath + "option.txt","")
+				except: pass
+			if selfAddon.getSetting('host2') == "Opção 1":
+				save(datapath + "option.txt","1")
+			if selfAddon.getSetting('host2') == "Opção 2":
+				save(datapath + "option.txt","2")
+			if selfAddon.getSetting('host2') == "Opção 3":
+				save(datapath + "option.txt","3")			
+			return
+		if prioridade == "2":
+			try: save(datapath + "option.txt","")
+			except:
+				try:
+					os.mkdir( datapath , 0777 )
+					save(datapath + "option.txt","")
+				except: pass
+			if selfAddon.getSetting('host3') == "Opção 1":
+				save(datapath + "option.txt","1")
+			if selfAddon.getSetting('host3') == "Opção 2":
+				save(datapath + "option.txt","2")
+			if selfAddon.getSetting('host3') == "Opção 3":
+				save(datapath + "option.txt","3")			
+			return
 	
 class qualidades(xbmcgui.WindowXMLDialog):
     def __init__(self,strXMLname, strFallbackPath, strDefaultName, forceFallback):
@@ -1542,9 +1635,6 @@ def ler_pm(url):
         except: pass
         janela_lateral("Mensagem Privada",text)
 
-
-
-
 def apagar_pm(url):
 	print url
 	pm_id = ''
@@ -1564,19 +1654,9 @@ def apagar_pm(url):
 			mensagemok('RatoTV','Ocorreu um erro ao apagar a mensagem.')
 	else: mensagemok('RatoTV','Ocorreu um erro ao apagar a mensagem.')
 
-
-
-
-
-
-
-
-
-
 #################################################################################
 #                                  FAVORITOS e VISTOS                           #
 #################################################################################
-
 
 def add_to_favourites(url):
     print 'Adicionando aos favoritos: url: '+url
@@ -1625,15 +1705,12 @@ def deixar_seguir(url):
 		os.remove(filename)
 		xbmc.executebuiltin("XBMC.Notification(RatoTV,"+"Série removida com sucesso!"+","+"6000"+"," + addonfolder +"/icon.png)")
 		xbmc.executebuiltin("XBMC.Container.Refresh")
-	except:
-		mensagemok('RatoTV','Ocorreu um erro ao remover série. Informe os developpers deste erro!')
+	except: mensagemok('RatoTV','Ocorreu um erro ao remover série. Informe os developpers deste erro!')
 
 def listar_seguir():
 	seguirpath=os.path.join(datapath,'Seguir')
-	try:
-		dircontents=os.listdir(seguirpath)
-	except:
-		dircontents=[]
+	try: dircontents=os.listdir(seguirpath)
+	except: dircontents=[]
 	print dircontents
 	if dircontents:
 		i=0
@@ -1648,8 +1725,7 @@ def listar_seguir():
 			addDir_filme(match[0][0],match[0][1],10,match[0][2],infolabels,fanart_rato_tv,len(dircontents),True,'tvshow',None,None)
 			i +=1
 		homepage_view()
-	else:
-		mensagemok('RatoTV','Não está a seguir nenhuma série.'),sys.exit(0)
+	else: mensagemok('RatoTV','Não está a seguir nenhuma série.'),sys.exit(0)
 
 ###
 
@@ -1694,7 +1770,6 @@ def verificar_novoepisodio_serie(txt):
 			return match[0][0],text
 		else: return match[0][0],''
 	except: return match[0][0],''
-
 
 ####
 
@@ -2138,8 +2213,6 @@ def transferir_biblioteca_filmes(name):
 	if not canceled and i >= 1:
 		xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
 			
-	
-
 def listar_series_subscritas():
 	folder = os.path.join(datapath,'tvshows-subscriptions')
 	dirs, files = xbmcvfs.listdir(folder)
@@ -2366,10 +2439,10 @@ def episodios_opcao(name,url,iconimage,sources,srt,originaltitle,season,episode)
 	num_opcoes = len(source)
 	if num_opcoes == 1: opcao = "1"
 	elif num_opcoes == 2:
-		janela2qualidades()
+		janela2qualidades("")
 		opcao = readfile(datapath + "option.txt")
 	elif num_opcoes == 3:
-		janela3qualidades()
+		janela3qualidades("")
 		opcao = readfile(datapath + "option.txt")
 	else: ok=mensagemok('RatoTV','Ocorreu um erro. Tente novamente.'); sys.exit(0)
 	if opcao == '10': sys.exit(0)
