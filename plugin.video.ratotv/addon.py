@@ -2109,7 +2109,7 @@ def transferir_biblioteca_filmes(name):
 	if comando == 'todos' and not canceled:
 		progresso.update(100,'Tarefa realizada com sucesso')
 		progresso.close()
-	if not canceled and i >1:
+	if not canceled and i >= 1:
 		xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
 			
 	
