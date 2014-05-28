@@ -18,7 +18,7 @@
 
 ##############BIBLIOTECAS A IMPORTAR E DEFINICOES####################
 from __future__ import division
-import urllib,urllib2,re,xbmcplugin,xbmcgui,xbmc,xbmcaddon,HTMLParser,json,os,time,datetime,binascii
+import urllib,urllib2,re,xbmcplugin,xbmcgui,xbmcvfs,xbmc,xbmcaddon,HTMLParser,json,os,time,datetime,binascii
 from t0mm0.common.addon import Addon
 
 
@@ -64,16 +64,14 @@ def Menu_principal():
         addDir_reg_menu('Filmes','url',1,artfolder+'filmes.jpg',True)
         addDir_reg_menu('Séries',base_url,8,artfolder+'series.jpg',True)
         addDir_reg_menu('Pedidos',"http://www.ratotv.net/requests/page/1/",33,artfolder+'contactar.jpg',True)
-        addDir_reg_menu('Teste',"http://www.ratotv.net/requests/page/1/",29,artfolder+'contactar.jpg',False)
-
         addDir_reg_menu('Pesquisar','url',4,artfolder+'pesquisa.jpg',True)
         addDir_reg_menu('','','',addonfolder+'logo.png',False)
         addDir_reg_menu('Favoritos','http://www.ratotv.net/favorites/page/1/',15,artfolder+'favoritos.jpg',True)
+	addDir_reg_menu('Séries subscritas',base_url + 'index.php?cstart=1&do=cat&category=tvshows',45,artfolder+'series.jpg',True)
 	addDir_reg_menu('Séries a seguir',base_url + 'index.php?cstart=1&do=cat&category=tvshows',26,artfolder+'series.jpg',True)
         addDir_reg_menu('Géneros','url',5,artfolder+'categorias.jpg',True)
         addDir_reg_menu('Ano','url',42,artfolder+'pesquisa.jpg',True)
         addDir_reg_menu('Definições','url',9,artfolder+'definicoes.jpg',True)
-        #addDir_reg_menu('Menu teste','url',29,artfolder+'contactar.jpg',True)
         addDir_reg_menu('','','',addonfolder+'logo.png',False)
 	mensagens_conta()
         menu_view()
@@ -88,6 +86,7 @@ def Menu_principal():
 def Menu_principal_series():
     addDir_reg_menu('Todas as séries',base_url + 'index.php?cstart=1&do=cat&category=tvshows',2,artfolder+'series.jpg',True)
     addDir_reg_menu('Séries a seguir',base_url + 'index.php?cstart=1&do=cat&category=tvshows',26,artfolder+'series.jpg',True)
+    addDir_reg_menu('Séries subscritas',base_url + 'index.php?cstart=1&do=cat&category=tvshows',45,artfolder+'series.jpg',True)
     addDir_reg_menu('Séries mais recentes',base_url,6,artfolder+'series-mais.jpg',True)
     addDir_reg_menu('Séries mais populares',base_url,6,artfolder+'series-mais.jpg',True)
     addDir_reg_menu('Séries mais vistas',base_url,6,artfolder+'series-mais.jpg',True)
@@ -2007,7 +2006,84 @@ def handle_wait(time_to_wait,title,text,segunda=''):
 	    progresso.close()
             return True
 
-def teste(name,url):
+####Subscricoes
+
+def listar_series_subscritas():
+	folder = os.path.join(datapath,'tvshows-subscriptions')
+	dirs, files = xbmcvfs.listdir(folder)
+	if len(files) > 0:
+		for ficheiro in files:
+			seriefile = os.path.join(datapath,'tvshows-subscriptions',ficheiro)
+			serie_data = readfile(seriefile) 
+			serie_array = serie_data.split('|')
+			infolabels = {"Title": serie_array[0]}
+			try:
+				addDir_filme(serie_array[0],serie_array[1],10,serie_array[2],infolabels,fanart_rato_tv,len(files),True,'tvshow',None,None)
+			except: pass
+		homepage_view()
+	else:
+		ok=mensagemok('RatoTV','Não tem séries subscritas.')
+		sys.exit(0)
+		
+def remover_subscricao_serie(name,url,iconimage):
+	id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
+	txt_serie = os.path.join(datapath,'tvshows-subscriptions',str(id_ratotv) +'.txt')
+	xbmcvfs.delete(txt_serie)
+	yes= xbmcgui.Dialog().yesno("RatoTv", 'Pretende também remover os ficheiros e actualizar a biblioteca?')
+	if yes:
+		iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,"fanart")
+		folder_show = os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle)
+		dirs, files = xbmcvfs.listdir(folder_show)
+		for directory in dirs:
+			directory_apagar = os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle,directory)
+			subdirs, subfiles = xbmcvfs.listdir(directory_apagar)
+			for subfile in subfiles:
+				sub_file = os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle,directory,subfile)
+				xbmcvfs.delete(sub_file)
+			xbmcvfs.rmdir(directory_apagar)
+		for ficheiro in files:
+			ficheiro_apagar = os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle,ficheiro)
+			xbmcvfs.delete(ficheiro_apagar)
+		xbmcvfs.rmdir(folder_show)
+		xbmc.executebuiltin("XBMC.CleanLibrary(video)")
+	else:
+		pass
+	xbmc.executebuiltin("XBMC.Notification(RatoTv,Removida subscrição com sucesso!,'10000',"+addonfolder+"/icon.png)")
+	xbmc.executebuiltin("XBMC.Container.Refresh")
+
+
+def subscrever_serie(name,url,iconimage):
+	print "Subscrever series",name,url,iconimage
+	id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
+	if not xbmcvfs.exists(os.path.join(datapath,'tvshows-subscriptions')):
+			xbmcvfs.mkdir(os.path.join(datapath,'tvshows-subscriptions'))
+	save(os.path.join(datapath,'tvshows-subscriptions',str(id_ratotv) +'.txt'),name + '|'+url+'|'+iconimage)
+	print selfAddon.getSetting('libraryfolder')
+	if selfAddon.getSetting('libraryfolder'):
+		if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows')):
+			xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows'))
+		iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,"fanart")
+		if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle)):
+			xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle))
+		total_seasons = len(serie_dict_temporadas.keys())
+		for season in serie_dict_temporadas.keys():
+			if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle,'Season ' + str(season))):
+				xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle,'Season ' + str(season)))
+			temp,year,episodios_dict = listar_temporadas_get_dictionary(" "+str(int(season)),url,"fanart","iconimage",str(serie_dict_temporadas))
+			for episode in episodios_dict.keys():
+				string = 'S'+str(season)+'E'+str(episode)
+				strm='plugin://plugin.video.ratotv/?url=' + url +'&mode=44&name=' + string
+				save(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle,'Season ' + str(season),originaltitle + ' '+ string+'.strm'),strm)
+		xbmc.executebuiltin("XBMC.Notification(RatoTv,Série subscrita com sucesso!,'10000',"+addonfolder+"/icon.png)")
+		xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
+		xbmc.executebuiltin("XBMC.Container.Refresh")	
+	else:
+		print "falhou"
+
+
+def play_from_outside(name,url):
+	listitem = xbmcgui.ListItem(name, iconImage="iconimage", thumbnailImage="iconimage")
+	xbmcplugin.setResolvedUrl(int(sys.argv[1]),False,listitem)
 	try:
 		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: print "ERRO FALTA FAZER",sys.exit(0)
@@ -2023,7 +2099,7 @@ def teste(name,url):
 		except:
 			proceed = False
 		if proceed:
-			iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,fanart)
+			iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,"fanart")
 			temporada = match[0][0]
 			episodio = match[0][1]
 			total_seasons = len(serie_dict_temporadas.keys())
@@ -2270,7 +2346,7 @@ def addDir_filme(name,url,mode,iconimage,infolabels,fanart,totalit,pasta,tipo,HD
     try: u += "&originaltitle="+infolabels['originaltitle']
     except:
 	pass
-    try: id_ratotv = re.findall(r'\d+', url)[0]
+    try: id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
     except: id_ratotv = None
     print id_ratotv
     seguirpath=os.path.join(datapath,'Seguir')
@@ -2314,6 +2390,10 @@ def addDir_filme(name,url,mode,iconimage,infolabels,fanart,totalit,pasta,tipo,HD
 	    if os.path.exists(filename): contextmen.append(('Deixar de seguir série', 'XBMC.RunPlugin(%s?mode=27&url=%s&name=%s&iconimage=%s)' % (sys.argv[0], url, name, iconimage)))
 	    else: contextmen.append(('Seguir série', 'XBMC.RunPlugin(%s?mode=25&url=%s&name=%s&iconimage=%s)' % (sys.argv[0], url, name, iconimage)))
 	    contextmen.append(('Próximo episódio?', 'XBMC.RunPlugin(%s?mode=28&url=%s&name=%s&iconimage=%s)' % (sys.argv[0], url, name, iconimage)))
+	    if not xbmcvfs.exists(os.path.join(datapath,'tvshows-subscriptions',str(id_ratotv)+'.txt')):
+	    	contextmen.append(('Subscrever série', 'XBMC.RunPlugin(%s?mode=43&url=%s&name=%s&iconimage=%s)' % (sys.argv[0], url, name, iconimage)))
+	    else:
+	    	contextmen.append(('Remover subscrição', 'XBMC.RunPlugin(%s?mode=46&url=%s&name=%s&iconimage=%s)' % (sys.argv[0], url, name, iconimage)))
     print visto
     if visto==True:
         contextmen.append(('Marcar como não visto', 'XBMC.RunPlugin(%s?mode=22&url=%s&)' % (sys.argv[0], url)))
@@ -2735,5 +2815,19 @@ elif mode==40: episodios_opcao(name,url,iconimage,sources,srt,originaltitle,seas
 elif mode==41: pesquisa_ano(url)
 
 elif mode==42: menu_ano()
+
+elif mode==43: subscrever_serie(name,url,iconimage)
+
+elif mode==44: play_from_outside(name,url)
+
+elif mode==45: listar_series_subscritas()
+
+elif mode==46: remover_subscricao_serie(name,url,iconimage)
+
+elif mode==47: transferir_biblioteca_filmes()
+
+elif mode==48: procurar_novas_series()
+
+elif mode==49: procurar_novos_filmes()
 
 if mode != 9: xbmcplugin.endOfDirectory(int(sys.argv[1]))

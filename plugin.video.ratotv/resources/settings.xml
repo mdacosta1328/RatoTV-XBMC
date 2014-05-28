@@ -23,6 +23,17 @@
       <setting id="series-season-poster" type="bool" label="Procurar poster da temporda" default="true"/>
       <setting id="series-episode-thumbnails" type="bool" label="Procurar thumbnail do episodio" default="true"/>
    </category>
+   <category label="Biblioteca">
+      <setting label="[B][COLOR green]Definições gerais para a integração com a biblioteca do xbmc:[/B][/COLOR]" type="lsep" />
+      <setting id="libraryfolder" type="folder" label="Pasta da biblioteca" default=""/>
+      <setting label="[B][COLOR green]Séries:[/B][/COLOR]" type="lsep" />
+      <setting id="series-library" type="bool" label="Procurar novos episódios (service.py)" default="false"/>
+      <setting type="action" label="Procurar novos episódios agora" option="close" action="RunPlugin(plugin://plugin.video.ratotv/?mode=48)" />
+      <setting label="[B][COLOR green]Filmes:[/B][/COLOR]" type="lsep" />
+      <setting id="filmes-library" type="bool" label="Procurar novos filmes (service.py)" default="false"/>
+      <setting type="action" label="Transferir toda a biblioteca de filmes" option="close" action="RunPlugin(plugin://plugin.video.ratotv/?mode=47)" />
+      <setting type="action" label="Procurar novos filmes agora" option="close" action="RunPlugin(plugin://plugin.video.ratotv/?mode=49)" />
+   </category>
    <category label="Tipos de vista">
       <setting label="[B][COLOR green]Definições de vista:[/B][/COLOR]" type="lsep" />
      <setting id="menu-view" type="enum" label="Vista - Menus" values="Lista|Lista Grande" default="0"/>
