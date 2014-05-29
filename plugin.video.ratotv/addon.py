@@ -340,7 +340,10 @@ def stream_qualidade(url,name,iconimage):
 			except: subs = ''
 			print subs
 			player_rato(decoded_url,subs,name,url,iconimage,'',None,None)
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/patch-3
 
 def player_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 	match = re.compile('\((.+?)\)').findall(name)
@@ -1212,7 +1215,11 @@ def estatisticas_trakt(url):
 
 
 #class 2 qualidades
+<<<<<<< HEAD
 def janela2qualidades(prioridade):
+=======
+def janela2qualidades(prioridade=None):
+>>>>>>> origin/patch-3
 	if selfAddon.getSetting('fonte-auto') == "false":
 		ui = qualidades_duas('2qualidades.xml',addonfolder,'Default','')
 		ui.doModal()
@@ -1250,7 +1257,10 @@ def janela2qualidades(prioridade):
 			if selfAddon.getSetting('host3') == "Opção 2" or selfAddon.getSetting('host3') == "Opção 3": save(datapath + "option.txt","2")			
 			return
 		
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/patch-3
 class qualidades_duas(xbmcgui.WindowXMLDialog):
     def __init__(self,strXMLname, strFallbackPath, strDefaultName, forceFallback):
 	try: save(datapath + "option.txt","")
@@ -1278,7 +1288,11 @@ class qualidades_duas(xbmcgui.WindowXMLDialog):
 
 
 #class 3 qualidades
+<<<<<<< HEAD
 def janela3qualidades(prioridade):
+=======
+def janela3qualidades(prioridade=None):
+>>>>>>> origin/patch-3
 	if selfAddon.getSetting('fonte-auto') == "false":
 		ui = qualidades('3qualidades.xml',addonfolder,'Default','')
 		ui.doModal()
@@ -1318,7 +1332,11 @@ def janela3qualidades(prioridade):
 			if selfAddon.getSetting('host3') == "Opção 2": save(datapath + "option.txt","2")
 			if selfAddon.getSetting('host3') == "Opção 3": save(datapath + "option.txt","3")
 			return
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> origin/patch-3
 class qualidades(xbmcgui.WindowXMLDialog):
     def __init__(self,strXMLname, strFallbackPath, strDefaultName, forceFallback):
 	try: save(datapath + "option.txt","")
