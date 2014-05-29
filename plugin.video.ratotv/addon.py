@@ -21,9 +21,7 @@ from __future__ import division
 import urllib,urllib2,re,xbmcplugin,xbmcgui,xbmcvfs,xbmc,xbmcaddon,HTMLParser,json,os,time,datetime,binascii
 from t0mm0.common.addon import Addon
 
-
 h = HTMLParser.HTMLParser()
-
 
 addon_id = 'plugin.video.ratotv'
 selfAddon = xbmcaddon.Addon(id=addon_id)
@@ -32,7 +30,6 @@ artfolder = addonfolder+'/resources/img/'
 addon = Addon(addon_id)
 datapath = addon.get_profile()
 ADDON = selfAddon
-
 
 base_url = 'http://www.ratotv.net/'
 escolher_qualidade = xbmcgui.Dialog().select
@@ -52,7 +49,6 @@ if selfAddon.getSetting('ga_visitor')=='':
 PATH = "ratotv"  #<---- PLUGIN NAME MINUS THE "plugin.video"
 UATRACK="UA-41937813-3" #<---- GOOGLE ANALYTICS UA NUMBER
 VERSION = "1.1.0" #<---- PLUGIN VERSION
-
 
 ######################################################################################################
 #                                               MENUS                                                #
@@ -82,7 +78,6 @@ def Menu_principal():
         addDir_reg_menu('Alterar Definições','url',9,artfolder+'definicoes.jpg',False)
         addDir_reg_menu('Tentar Novamente','url',None,artfolder+'refresh.jpg',True)
         menu_view()
-
 
 def Menu_principal_series():
     addDir_reg_menu('Todas as séries',base_url + 'index.php?cstart=1&do=cat&category=tvshows',2,artfolder+'series.jpg',True)
@@ -141,20 +136,16 @@ def menu_ano():
 	for i in reversed(xrange(1900,2015)):
 		addDir_reg_menu(str(i),base_url + 'tags/' + str(i) + '/page/1/',16,artfolder+'pesquisa.jpg',True)
 
-	
-
 ##################################################################################################################################
 #                                                       FUNCOES LISTAGEM                                                         #
 ##################################################################################################################################
 
 def get_original_title(url):
-	try:
-		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	try: html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: html_source = ""
 	if html_source:
 		match = re.compile("<strong>Título Original: </strong>(.+?)</li>").findall(html_source)
-		if match:
-			return match[0]
+		if match: return match[0]
 		else: return "N/A"
 
 def play_video(name,url,iconimage,Sources,srt,seriesName,season,episode):
@@ -189,15 +180,13 @@ def play_video(name,url,iconimage,Sources,srt,seriesName,season,episode):
 	if len(titles) != 1:
 		if selfAddon.getSetting('qualidade-auto') == "false":
 			choose=escolher_qualidade('Seleccione a qualidade',titles)
-			if choose > -1:
-				linkescolha=player_rato(url_movie_file[choose],srt,name,url,iconimage,infolabels,season,episode)
+			if choose > -1: linkescolha=player_rato(url_movie_file[choose],srt,name,url,iconimage,infolabels,season,episode)
 		else: linkescolha=player_rato(url_movie_file[0],srt,name,url,iconimage,infolabels,season,episode)
 	else: player_rato(url_movie_file[0],srt,name,url,iconimage,infolabels,season,episode)
 
 def resolver_externos(hashstring):
 	print hashstring
-	try:
-		decoded_url = abrir_url("http://www.ratotv.net/xmbc/zen.php?hash=" + hashstring)
+	try: decoded_url = abrir_url("http://www.ratotv.net/xmbc/zen.php?hash=" + hashstring)
 	except: ok=mensagemok('RatoTV','Não conseguiu resolver a hash.');decoded_url = ""
 	if "http://" in decoded_url:
 		return decoded_url
@@ -214,11 +203,9 @@ def resolver_externos(hashstring):
 				mydata += ',("usr_login",""),("referer","")]';data = eval(mydata);
 				handle_wait(6,"RatoTV","Por favor aguarde 6 segundos...",segunda='')
 				sourcecode = post_page_free(binascii.unhexlify(''.join('68 74 74 70 3A 2F 2F 73 74 72 65 61 6D 69 6E 2E 74 6F 2F'.split())) + str(decoded_url.replace("stri","")),data)
-				try:
-					swfurl = re.compile('src: "(.+?)" }').findall(sourcecode)[0];rtmpurl = re.compile('streamer: "(.+?)"').findall(sourcecode)[0];	playpath = re.compile("file:'(.+?)'").findall(sourcecode)[0];rtmpurl = rtmpurl + ' playpath=' + playpath + ' swfUrl='+swfurl
+				try: swfurl = re.compile('src: "(.+?)" }').findall(sourcecode)[0];rtmpurl = re.compile('streamer: "(.+?)"').findall(sourcecode)[0];	playpath = re.compile("file:'(.+?)'").findall(sourcecode)[0];rtmpurl = rtmpurl + ' playpath=' + playpath + ' swfUrl='+swfurl
 				except:
-					try:
-						rtmpurl= re.compile('{file: "(.+?)"}').findall(sourcecode)[1]
+					try: rtmpurl= re.compile('{file: "(.+?)"}').findall(sourcecode)[1]
 					except: pass
 				return rtmpurl
 			except: ok=mensagemok('RatoTV','Não conseguiu resolver a hash.'); return False
@@ -227,10 +214,8 @@ def resolver_externos(hashstring):
 				data = re.compile('<input.*?name="(.*?)".*?value="(.*?)"').findall(abrir_url(binascii.unhexlify(''.join('68 74 74 70 3A 2F 2F 76 69 64 78 2E 74 6F 2F'.split())) + decoded_url + binascii.unhexlify(''.join('2E 68 74 6D 6C'.split()))))
 				mydata='['
 				for i in xrange(len(data)):
-					if i != len(data)-1:
-						mydata += "('" + data[i][0] + "','" + data[i][1] + "'),"
-					else:
-						mydata += "('" + data[i][0] + "','" + data[i][1] + "')"
+					if i != len(data)-1: mydata += "('" + data[i][0] + "','" + data[i][1] + "'),"
+					else: mydata += "('" + data[i][0] + "','" + data[i][1] + "')"
 				mydata += ']';data = eval(mydata);
 				handle_wait(11,"RatoTV","Por favor aguarde 11 segundos...",segunda='')
 				decoded = re.compile('file: "(.+?)",').findall(post_page_free(binascii.unhexlify(''.join('68 74 74 70 3A 2F 2F 76 69 64 78 2E 74 6F 2F'.split())) + decoded_url + binascii.unhexlify(''.join('2E 68 74 6D 6C'.split())),data))[0]
@@ -252,8 +237,7 @@ def rssnumber(html_source):
 def stream_qualidade(url,name,iconimage):
 	print url
 	titles = []; url_movie_file=[]
-	try:
-		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	try: html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente \n ou contacte um dos administradores do site.');html_source =""
 	opcao,rssopcao = rssnumber(html_source)
 	num_opcoes = len(opcao)
@@ -266,8 +250,7 @@ def stream_qualidade(url,name,iconimage):
 		opcao = readfile(datapath + "option.txt")
 	else: ok=mensagemok('RatoTV','Ocorreu um erro. Tente novamente.')
 	if opcao == "1":
-		try:
-			rss_source = abrir_url(urllib.quote(rssopcao[0], safe=":/"))
+		try: rss_source = abrir_url(urllib.quote(rssopcao[0], safe=":/"))
 		except: ok=mensagemok('RatoTV','Não foi possível abrir o feed da opção 1')
 		try:
         		match = re.compile('<jwplayer:source file="(.+?)" label="(.+?)" />').findall(rss_source)
@@ -283,20 +266,16 @@ def stream_qualidade(url,name,iconimage):
    		print titles,url_movie_file,subs
     		if selfAddon.getSetting('qualidade-auto') == "false":
         		choose=escolher_qualidade('Seleccione a qualidade',titles)
-       			if choose > -1:
-            			linkescolha=player_rato(url_movie_file[choose]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
-    		else:
-        		linkescolha=player_rato(url_movie_file[0]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
-	elif opcao == "10":
-		sys.exit(0)
+       			if choose > -1: linkescolha=player_rato(url_movie_file[choose]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
+    		else: linkescolha=player_rato(url_movie_file[0]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
+	elif opcao == "10": sys.exit(0)
 	else:
 		try:
 			rss_escolhido = int(opcao)-1;print rss_escolhido
 			rss_source = abrir_url(urllib.quote(rssopcao[rss_escolhido], safe=":/"))
 		except: ok=mensagemok('RatoTV','Não foi possível abrir o feed da opção 1')
 		print rss_source
-		if rss_source:
-			hash_movie = re.compile('<location>ratotv*(.+?)</location>').findall(rss_source)[0].replace("*","")
+		if rss_source: hash_movie = re.compile('<location>ratotv*(.+?)</location>').findall(rss_source)[0].replace("*","")
 		else: ok=mensagemok('RatoTV','Não conseguiu obter a hash.')
 		try:
 			decoded_url = resolver_externos(hash_movie)
@@ -319,8 +298,7 @@ def player_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 		infolabels['Year'] = match[0]
 	if 'TVShowTitle' in infolabels:
 		match = re.compile('\((.+?)\)').findall(infolabels['TVShowTitle'])
-		if match:
-			infolabels['TVShowTitle']=infolabels['TVShowTitle'].replace(match[0],'').replace('(','').replace(')','')
+		if match: infolabels['TVShowTitle']=infolabels['TVShowTitle'].replace(match[0],'').replace('(','').replace(')','')
 	print video,subs,name,iconimage,infolabels
 	GA("None",name)
 	playlist = xbmc.PlayList(1)
@@ -367,18 +345,15 @@ class Player(xbmc.Player):
         self.playing = False
         time = int(self.time)
         print 'self.time/self.totalTime='+str(self.time/self.totalTime)
-        if (self.time/self.totalTime > 0.90):
-	    adicionar_visto(url,season=season,episode=episode)
+        if (self.time/self.totalTime > 0.90): adicionar_visto(url,season=season,episode=episode)
 	    try:
 		definition_trakt = readfile(os.path.join(datapath,'trakt.txt'))
 		xbmcaddon.Addon(id='script.trakt').setSetting('rate_movie',definition_trakt)
 	    except: pass
 	    if selfAddon.getSetting('votar-stopped')=='true':
 		try:
-			if season:
-				pass
-			else:
-				votar_ratotv()
+			if season: pass
+			else: votar_ratotv()
 		except: votar_ratotv()
 	else:
 	    try:
@@ -421,12 +396,10 @@ def pesquisa_ano(url):
         	url_pesquisa = base_url + 'tags/' + str(encode) + '/page/1/'
 		print url_pesquisa
 		listar_pesquisa(urllib.quote_plus(url_pesquisa))
-	else:
-		sys.exit(0)
+	else: sys.exit(0)
 
 def filmes_homepage(name,url):
-    try:
-        html_source = abrir_url(url)
+    try: html_source = abrir_url(url)
     except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente ou contacte um dos administradores do site.');html_source = ''
     if name == 'Filmes mais vistos':
         GA("None","Filmes mais vistos")
@@ -483,10 +456,6 @@ def filmes_homepage(name,url):
     else:pass
     homepage_view()
 
-
-
-
-
 def listar_media(url,mode):
     try:
         html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
@@ -514,13 +483,9 @@ def listar_media(url,mode):
         print type(total_paginas[0])
         addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas[0]+ ') | Próxima >>>[/COLOR]',pag_seguinte[0].replace('amp;',''),mode,artfolder+'seta.jpg',True)
     except:
-        try:
-            addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas[0][0]+ ') | Próxima >>>[/COLOR]',pag_seguinte[0].replace('amp;',''),mode,artfolder+'seta.jpg',True)
+        try: addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas[0][0]+ ') | Próxima >>>[/COLOR]',pag_seguinte[0].replace('amp;',''),mode,artfolder+'seta.jpg',True)
         except:pass
     moviesandseries_view()
-
-
-
 
 def listar_pesquisa(url):
 	URLpesquisa = urllib.unquote(url)
@@ -541,27 +506,21 @@ def listar_pesquisa(url):
 		paginas = []
 		paginas_check = re.compile('href=".+?/page/(.+?)/">(.+?)</a>').findall(html_source)
 		for pagurl,paga in paginas_check:
-			if pagurl == paga:
-				paginas.append(paga)
+			if pagurl == paga: paginas.append(paga)
 	totalit = len(html_source_trunk)
  	if totalit != 0:
 		for html_trunk in html_source_trunk:
 			try:
 				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_trunk)
-				if filme_ou_serie == 'movie':
-					addDir_filme(name + ' ('+str(infolabels['Year'])+')',url,3,iconimage,infolabels,fanart,totalit,False,'movie',HD,favorito)
-				elif filme_ou_serie == 'tvshow':
-					addDir_filme(name + ' ('+str(infolabels['Year'])+')',url,10,iconimage,infolabels,fanart,totalit,True,'tvshow',HD,favorito)
+				if filme_ou_serie == 'movie': addDir_filme(name + ' ('+str(infolabels['Year'])+')',url,3,iconimage,infolabels,fanart,totalit,False,'movie',HD,favorito)
+				elif filme_ou_serie == 'tvshow': addDir_filme(name + ' ('+str(infolabels['Year'])+')',url,10,iconimage,infolabels,fanart,totalit,True,'tvshow',HD,favorito)
 			except:pass
 		try:
 			total_paginas = max(paginas)
 			pag_seguinte = paginas[-1]
-			if encode:
-				pagina_seguinte = re.sub('search_start=[0-9]+','search_start='+pag_seguinte[0],URLpesquisa).replace('amp;','')
-			else:
-				pagina_seguinte = URLpesquisa.replace('/'+current_page[0]+'/','/' + str(int(current_page[0])+1)+'/')
-			if int(pag_seguinte) > int(current_page[0]):
-				addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas + ') | Próxima >>>[/COLOR]',pagina_seguinte,16,artfolder+'seta.jpg',True)
+			if encode: pagina_seguinte = re.sub('search_start=[0-9]+','search_start='+pag_seguinte[0],URLpesquisa).replace('amp;','')
+			else: pagina_seguinte = URLpesquisa.replace('/'+current_page[0]+'/','/' + str(int(current_page[0])+1)+'/')
+			if int(pag_seguinte) > int(current_page[0]): addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas + ') | Próxima >>>[/COLOR]',pagina_seguinte,16,artfolder+'seta.jpg',True)
 			else:pass
 		except: pass
 		moviesandseries_view()
@@ -660,15 +619,13 @@ def rato_tv_get_media_info(html_trunk):
     return data_dict,data_dict['Title'],url,thumbnail,fanart,filme_ou_serie,HD,favorito
 
 def series_seasons_get_dictionary(url,name,fanart):
-	try:
-		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	try: html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente \n ou contacte um dos administradores do site.'); match = ''
 	try:
 		#verificar se originaltitle e year estao definidos
 		print originaltitle,year
 		original_year = True
-	except:
-		original_year = False
+	except: original_year = False
 	if not original_year:
 		originaltitle=re.compile('<strong>Título Original: </strong>(.+?)</li>').findall(html_source)[0]
 		year = re.compile('<strong>Ano: </strong><a href=".+?">(.+?)</a>').findall(html_source)[0]
@@ -698,11 +655,8 @@ def series_seasons(url,name,fanart):
 						try: iconimage = key['images']['poster']
 						except: pass
 				addDir_temporada("[B][COLOR green]Temporada[/B][/COLOR] " + str(season),url,str(serie_dict_temporadas),39,iconimage,True,fanart)
-			except: 
-				addDir_temporada("[B][COLOR green]Temporada[/B][/COLOR] " + str(season),url,str(serie_dict_temporadas),39,iconimage,True,fanart)
-		else:
-			addDir_temporada("[B][COLOR green]Temporada[/B][/COLOR] " + str(season),url,str(serie_dict_temporadas),39,iconimage,True,fanart)
-
+			except: addDir_temporada("[B][COLOR green]Temporada[/B][/COLOR] " + str(season),url,str(serie_dict_temporadas),39,iconimage,True,fanart)
+		else: addDir_temporada("[B][COLOR green]Temporada[/B][/COLOR] " + str(season),url,str(serie_dict_temporadas),39,iconimage,True,fanart)
 
 ###################################################################################
 #FUNCOES AUXILIARES                                                               #
@@ -746,21 +700,17 @@ def download_qualidade(url,name,iconimage):
 	   		print titles,url_movie_file,subs
 	    		if selfAddon.getSetting('qualidade-auto') == "false":
 	        		choose=escolher_qualidade('Seleccione a qualidade',titles)
-	       			if choose > -1:
-	            			linkescolha=downloader_rato(url_movie_file[choose],subs,name,url,iconimage,'',None,None)
-	    		else:
-	        		linkescolha=downloader_rato(url_movie_file[0],subs,name,url,iconimage,'',None,None)
+	       			if choose > -1: linkescolha=downloader_rato(url_movie_file[choose],subs,name,url,iconimage,'',None,None)
+	    		else: linkescolha=downloader_rato(url_movie_file[0],subs,name,url,iconimage,'',None,None)
 		else:
 			try:
 				rss_escolhido = int(opcao)-1;print rss_escolhido
 				rss_source = abrir_url(urllib.quote(rssopcao[rss_escolhido], safe=":/"))
 			except: ok=mensagemok('RatoTV','Não foi possível abrir o feed da opção 1')
 			print rss_source
-			if rss_source:
-				hash_movie = re.compile('<location>ratotv*(.+?)</location>').findall(rss_source)[0].replace("*","")
+			if rss_source: hash_movie = re.compile('<location>ratotv*(.+?)</location>').findall(rss_source)[0].replace("*","")
 			else: ok=mensagemok('RatoTV','Não conseguiu obter a hash.')
-			try:
-				decoded_url = resolver_externos(hash_movie)
+			try: decoded_url = resolver_externos(hash_movie)
 			except: ok=mensagemok('RatoTV','Não conseguiu resolver a hash.')
 			try:
         			subs = re.compile('<captions.files>../(.+?)</captions.files>').findall(rss_source)
@@ -769,8 +719,7 @@ def download_qualidade(url,name,iconimage):
     			except: subs = ''
 			print subs
 			downloader_rato(decoded_url,subs,name,url,iconimage,'',None,None)
-	elif tipo == "tvshow":
-		pass
+	elif tipo == "tvshow": pass
 
 #def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 	#videos = "rtmp://95.211.209.210:1935/vod?h=rki7hbapyxuzcg3h5eacffvkybonuxzrgxil262y7qpygdrkg5hsfziimehq/16/6355539226_n.flv?h=rki7hbapyxuzcg3h5eacffvkybonuxzrgxil262y7qpygdrkg5hsfziimehq"
@@ -794,29 +743,23 @@ def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 			print "here"
 			u = urllib2.urlopen(request,timeout=1000)
 			if os.path.exists(ADDON.getSetting('folder') + 'series/'): pass
-			else:
-				os.mkdir( ADDON.getSetting('folder') + 'series/' , 0777 );
+			else: os.mkdir( ADDON.getSetting('folder') + 'series/' , 0777 );
 			folder_name_serie = ADDON.getSetting('folder') + 'series/' + name.replace(':','')
 			if os.path.exists(folder_name_serie): pass
-			else:
-				os.mkdir( folder_name_serie , 0777 );
+			else: os.mkdir( folder_name_serie , 0777 );
 			folder_name_serie_temporada = folder_name_serie + "/Season" + str(season)
 			if os.path.exists(folder_name_serie_temporada): pass
-			else:
-				os.mkdir( folder_name_serie_temporada , 0777 );
+			else: os.mkdir( folder_name_serie_temporada , 0777 );
 			folder_name = folder_name_serie_temporada + '/' + name.replace(':','') + "-Season" + str(season) + "Episode" + str(episode)
 			if os.path.exists(folder_name): pass
-			else:
-				os.mkdir( folder_name , 0777 );
+			else: os.mkdir( folder_name , 0777 );
 		else:
 			u = urllib2.urlopen(request,timeout=1000)
 			if os.path.exists(ADDON.getSetting('folder') + 'filmes/'): pass
-			else:
-				os.mkdir( ADDON.getSetting('folder') + 'filmes/' , 0777 );
+			else: os.mkdir( ADDON.getSetting('folder') + 'filmes/' , 0777 );
 			folder_name = ADDON.getSetting('folder') + 'filmes/' + name.replace(':','')
 			if os.path.exists(folder_name): pass
-			else:
-				os.mkdir( folder_name , 0777 );
+			else: os.mkdir( folder_name , 0777 );
 		legenda = abrir_url(urllib.quote(subs, safe=":/"))
 		legenda_filename = subs.split('/')[-1]
 		f = open(folder_name + '/' + legenda_filename, 'wb')
@@ -961,15 +904,12 @@ def comment(url):
                 page=urllib2.urlopen(req).read()
                 return mensagemok('RatoTV','Comentário enviado com sucesso.')
 
-
-
 def ler_comentarios(url,todos_os_comentarios):
     print url
     try:
         html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
         match=re.findall('<div id=\'comment-id(.*?)<div class="lst-itm">', html_source, re.DOTALL)
-    except:
-        match = []
+    except: match = []
     if match == []: return mensagemok('RatoTV','Não existem comentários ao filme.')
     else:
         for comentario in match:
@@ -978,25 +918,19 @@ def ler_comentarios(url,todos_os_comentarios):
             texto = re.findall("<div id=\'comm-id.+?\'>(.*?)</div>", comentario, re.DOTALL)
             texto = texto[0].replace('<br />','')
             quote = re.compile('<!--QuoteBegin(.+?)<!--QuoteEBegin-->').findall(texto)
-            for quo in quote:
-                    texto = texto.replace(quo,'')
+            for quo in quote: texto = texto.replace(quo,'')
             quote = re.compile('<!--QuoteBegin<!--QuoteEBegin-->(.+?)<!--QuoteEnd--></div><!--QuoteEEnd-->').findall(texto)
-            for quo in quote:
-                    texto = texto.replace(quo,'')
+            for quo in quote: texto = texto.replace(quo,'')
             quote = re.compile('<!--smile:(.+)<!--/smile-->').findall(texto)
-            for quo in quote:
-                    texto = texto.replace(quo,'')
+            for quo in quote: texto = texto.replace(quo,'')
             quote = re.compile('<span style=(.+)">').findall(texto)
-            for quo in quote:
-                    texto = texto.replace(quo,'')
+            for quo in quote: texto = texto.replace(quo,'')
             quote = re.compile('<pre>(.+)</pre>').findall(texto)
-            for quo in quote:
-                    texto = texto.replace(quo,'')
+            for quo in quote: texto = texto.replace(quo,'')
             texto = texto.replace('<pre>','').replace('</pre>','').replace('</span>','').replace('<!--smile:','').replace('<!--/smile-->','').replace('<!--QuoteBegin','').replace('<!--QuoteEBegin-->','').replace('<!--QuoteEnd-->','').replace('</div><!--QuoteEEnd-->','').replace('<b>','').replace('</b>','').replace('&eacute;','').replace('&nbsp;','').replace('<p>','').replace('</p>','').replace('&atilde;','ã').replace('&aacute;','á').replace('&ccedil;','ç')
             todos_os_comentarios = todos_os_comentarios +'[B]' + autor[0] +' em ' + data[0] + '[/B]\n' + texto + '\n-------------------------------------------------------\n\n'
     pag_seguinte = re.compile('href="(.+?)" onclick=".+?">Seguinte</a>').findall(html_source)
-    try:
-        ler_comentarios(pag_seguinte[0],todos_os_comentarios)
+    try: ler_comentarios(pag_seguinte[0],todos_os_comentarios)
     except: janela_lateral('Comentários: ',todos_os_comentarios)
 
 def janela_lateral(label,texto):
@@ -1039,23 +973,18 @@ def votar(url,voto):
 				trakt_login_check = True
 			except: trakt_login_check = False
 			if trakt_login_check == True:
-				try:
-					data['imdb_id'] = infolabels['code']
+				try: data['imdb_id'] = infolabels['code']
 				except: pass
-				try:
-					data['title'] = infolabels['originaltitle']
+				try: data['title'] = infolabels['originaltitle']
 				except: pass
-				try:
-					data['year'] = infolabels['Year']
+				try: data['year'] = infolabels['Year']
 				except: pass
-				try:
-					data['rating'] = voto
+				try: data['rating'] = voto
 				except: pass
 				print data
 				if filme_ou_serie == 'movie': url_json_post="http://api.trakt.tv/rate/movie/353f223c2afc3c2050fcb810810fdb49"
 				elif filme_ou_serie == 'tvshow': url_json_post="http://api.trakt.tv/rate/show/353f223c2afc3c2050fcb810810fdb49"
-				try:
-					json_post(data,url_json_post)
+				try: json_post(data,url_json_post)
 				except: print "Não conseguiu enviar rate para o trakt"
 			else:pass
 		else: pass
@@ -1065,8 +994,7 @@ def votar(url,voto):
 		print 'Voto:',urlfinal
 		post_page(urlfinal,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 		return xbmc.executebuiltin("XBMC.Notification(RatoTv,Obrigado pelo seu voto!,'10000',"+addonfolder+"/icon.png)")
-	except:
-		return mensagemok('RatoTV','Não foi possível votar. Tente mais tarde.')
+	except: return mensagemok('RatoTV','Não foi possível votar. Tente mais tarde.')
 
 def reportar(url):
 	id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)
@@ -1083,8 +1011,7 @@ def reportar(url):
 								mydata=[('login_name',selfAddon.getSetting('login_name')),('login_password',selfAddon.getSetting('login_password')),('login','submit'),('id',str(id_ratotv[0])),('action','news'),('text',urllib.unquote_plus(text[choose]))]
 								post_page_free(url,mydata)
 								mensagemok('RatoTV','Problema reportado com sucesso.')
-							except:
-								mensagemok('RatoTV','Ocorreu um problema')
+							except: mensagemok('RatoTV','Ocorreu um problema')
 			except: pass
 		else:
 				keyb = xbmc.Keyboard('RatoTv', 'Reporte o problema encontrado')
@@ -1098,27 +1025,21 @@ def reportar(url):
 							mydata=[('login_name',selfAddon.getSetting('login_name')),('login_password',selfAddon.getSetting('login_password')),('login','submit'),('id',str(id_ratotv[0])),('action','news'),('text',urllib.unquote_plus(comentario))]
 							post_page_free(url,mydata)
 							return mensagemok('RatoTV','Problema reportado com sucesso.')
-						except:
-							return mensagemok('RatoTV','Ocorreu um problema.')
-
-
+						except: return mensagemok('RatoTV','Ocorreu um problema.')
 
 def mensagem_site(html_source):
     try:
         match = re.compile("'(.+?)'").findall(html_source)
 	print match
-    except:
-        match = []
+    except: match = []
     if match != [] and selfAddon.getSetting('mensagem-site') == "true":
 	from random import randint
 	randomvalue = randint(0,len(match)-1)
         return mensagemok('RatoTV',match[randomvalue])
 
 def get_last_sep(url):
-	try:
-		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
-	except:
-		html_source = ''
+	try: html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	except: html_source = ''
 	match = re.compile('data-list="(.+?)".+?Temporada (.+?) ').findall(html_source)
 	if match:
 		last_season_rss = match[-1][0]
@@ -1133,8 +1054,7 @@ def get_last_sep(url):
 
 def proximo_episodio(url):
 	print 'A abrir url...',url
-	try:
-		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	try: html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: html_source = ''
 	match = re.compile('<strong>Título Original: </strong>(.+?)</li>').findall(html_source)
 	if match != []: titulo_original=match[0]
@@ -1157,8 +1077,7 @@ def proximo_episodio(url):
 	print 'tempo corrente ',int(time.time())
 	i=0
 	while i < len(episodios_dict):
-		if episodios_dict[i+1] < int(time.time()):
-			pass
+		if episodios_dict[i+1] < int(time.time()): pass
 		else: break
 		i += 1
 	if status == 'Ended': mensagemok('RatoTV','A série está completa. Não existem mais episódios ','para esta série.')
@@ -1179,12 +1098,10 @@ def votar_ratotv():
 	del ui
 
 def estatisticas_trakt(url):
-	try:
-		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	try: html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: html_source= ''
 	if html_source:
-		try:
-			infolabels,name,url2,iconimage2,fanart2,filme_ou_serie,HD2,favorito2 = rato_tv_get_media_info(html_source)
+		try: infolabels,name,url2,iconimage2,fanart2,filme_ou_serie,HD2,favorito2 = rato_tv_get_media_info(html_source)
 		except: pass
 		if infolabels['code']:
 			if filme_ou_serie == 'movie':
@@ -1245,7 +1162,6 @@ def estatisticas_trakt(url):
 
 
 #class 2 qualidades
-
 def janela2qualidades():
 	ui = qualidades_duas('2qualidades.xml',addonfolder,'Default','')
 	ui.doModal()
@@ -1254,8 +1170,7 @@ def janela2qualidades():
 
 class qualidades_duas(xbmcgui.WindowXMLDialog):
     def __init__(self,strXMLname, strFallbackPath, strDefaultName, forceFallback):
-	try:
-		save(datapath + "option.txt","")
+	try: save(datapath + "option.txt","")
 	except:
 		try:
 			os.mkdir( datapath , 0777 )
@@ -1271,8 +1186,7 @@ class qualidades_duas(xbmcgui.WindowXMLDialog):
 
     def onAction(self, action):
 	#print action.getId() #importante para saber que acção estou a fazer
-    	if action.getId() == 92:
-      		self.close()
+    	if action.getId() == 92: self.close()
 
     def onClick(self, controlID):
         if controlID == 50000: self.close(); save(datapath + "option.txt","10")
@@ -1281,7 +1195,6 @@ class qualidades_duas(xbmcgui.WindowXMLDialog):
 
 
 #class 3 qualidades
-
 def janela3qualidades():
 	ui = qualidades('3qualidades.xml',addonfolder,'Default','')
 	ui.doModal()
@@ -1290,8 +1203,7 @@ def janela3qualidades():
 
 class qualidades(xbmcgui.WindowXMLDialog):
     def __init__(self,strXMLname, strFallbackPath, strDefaultName, forceFallback):
-	try:
-		save(datapath + "option.txt","")
+	try: save(datapath + "option.txt","")
 	except:
 		try:
 			os.mkdir( datapath , 0777 )
@@ -1307,8 +1219,7 @@ class qualidades(xbmcgui.WindowXMLDialog):
 
     def onAction(self, action):
 	#print action.getId() #importante para saber que acção estou a fazer
-    	if action.getId() == 92:
-      		self.close()
+    	if action.getId() == 92: self.close()
 
     def onClick(self, controlID):
         if controlID == 50000: self.close(); save(datapath + "option.txt","10")
@@ -1317,12 +1228,10 @@ class qualidades(xbmcgui.WindowXMLDialog):
         if controlID == 11032: self.close(); save(datapath + "option.txt","3")
 
 #Adapted from Trakt.tv official addon! Thanks
-
 class JANELA_VOTO(xbmcgui.WindowXMLDialog):
     buttons = {11030:1,11031:2,11032:3,11033:4,11034:5,11035:6,11036:7,11037:8,11038:9,11039:10}
     focus_labels = {10030: 1314,10031: 1315,11030: 1315,11031: 1316,11032: 1317,11033: 1318,11034: 1319,11035: 1320,11036: 1321,11037: 1322,11038: 1323,11039: 1314}
-    def __init__(self,strXMLname, strFallbackPath, strDefaultName, forceFallback):
-	pass
+    def __init__(self,strXMLname, strFallbackPath, strDefaultName, forceFallback): pass
 
     def onInit(self):
         # Put your List Populating code/ and GUI startup stuff here
@@ -1331,8 +1240,7 @@ class JANELA_VOTO(xbmcgui.WindowXMLDialog):
 
     def onAction(self, action):
 	#print action.getId() #importante para saber que acção estou a fazer
-    	if action.getId() == 92:
-      		self.close()
+    	if action.getId() == 92: self.close()
 
     def onClick(self, controlID):
         if controlID == 50000: self.close()
@@ -1374,8 +1282,7 @@ def menu_pedidos(url):
 			print "Não apresentar mais esta mensagem"
 			selfAddon.setSetting('mensagem-pedidos',"false")
 		else: print "carreguei no um"
-	try:
-		html_source = post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	try: html_source = post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: html_source = ''
 	html_source_trunk = re.findall('<div class="req-all"(.*?)Tambem Quero', html_source, re.DOTALL)
 	print len(html_source_trunk)
@@ -1383,15 +1290,13 @@ def menu_pedidos(url):
 		img_titulo = re.compile('src="(.+?)" alt="(.+?)"').findall(trunk)
 		pedidos = re.compile('style="cursor: default;">(.+?)</b>').findall(trunk)
 		id_pedido = re.compile("javascript:add_request\('(.+?)'\)").findall(trunk)
-		try:
-			addDir_reg_menu(img_titulo[0][1] + "[COLOR green] (" + pedidos[0] + " pedidos)[/COLOR]",id_pedido[0],34,"http://ratotv.net" +img_titulo[0][0],False,fanart=fanart_rato_tv)
+		try: addDir_reg_menu(img_titulo[0][1] + "[COLOR green] (" + pedidos[0] + " pedidos)[/COLOR]",id_pedido[0],34,"http://ratotv.net" +img_titulo[0][0],False,fanart=fanart_rato_tv)
 		except: pass
 	match = re.compile('<a href="http://www.ratotv.net/requests/page/.+?/">(.+?)</a>').findall(html_source)
 	pag_total = match[-1]
 	print "paginas total",pag_total
 	print match
-	try:
-		addDir_reg_menu("[COLOR green]Página " + str(pag_actual) +"/"+str(pag_total) + " |[B] Seguinte >>[/COLOR][/B]",'http://www.ratotv.net/requests/page/' + str(int(pag_actual)+1) + '/',33,artfolder+'seta.jpg',True,fanart=fanart_rato_tv)
+	try: addDir_reg_menu("[COLOR green]Página " + str(pag_actual) +"/"+str(pag_total) + " |[B] Seguinte >>[/COLOR][/B]",'http://www.ratotv.net/requests/page/' + str(int(pag_actual)+1) + '/',33,artfolder+'seta.jpg',True,fanart=fanart_rato_tv)
 	except: pass
 	pedidos_view()
 
@@ -1419,8 +1324,7 @@ def pedir_serie_menu():
 				poster = data[i]["images"]["poster"]
 				fanarttrakt = data[i]["images"]["fanart"]
 				if imdb_id:
-					try:
-						addDir_reg_menu(titulo + " (" +str(ano)+")",imdb_id,35,poster,False,fanart=fanarttrakt)
+					try: addDir_reg_menu(titulo + " (" +str(ano)+")",imdb_id,35,poster,False,fanart=fanarttrakt)
 					except:pass
 		data = trakt_api().search_show(comentario)
 		if len(data) >=1:
@@ -1432,8 +1336,7 @@ def pedir_serie_menu():
 				poster = data[i]["images"]["poster"]
 				fanarttrakt = data[i]["images"]["fanart"]
 				if imdb_id:
-					try:
-						addDir_reg_menu(titulo + " (" +str(ano)+")",imdb_id,35,poster,False,fanart=fanarttrakt)
+					try: addDir_reg_menu(titulo + " (" +str(ano)+")",imdb_id,35,poster,False,fanart=fanarttrakt)
 					except:pass
 	pedidos_view()
 
@@ -1443,10 +1346,8 @@ def pedir_imdb(imdb):
 	mydata=[('login_name',selfAddon.getSetting('login_name')),('login_password',selfAddon.getSetting('login_password')),('film_request','yes'),('req_url',imdb)]
 	source = post_page_free("http://www.ratotv.net/engine/ajax/mws-film.ajax.php",mydata)
 	print source
-	if '"html":' in source:
-		xbmc.executebuiltin("XBMC.Notification(RatoTV,"+"Pedido efectuado com sucesso."+","+"6000"+"," + addonfolder +"/icon.png)")
-	elif '"Ja fizeste este pedido!"' in source:
-		mensagemok('RatoTV','Lamentamos mas já fez o pedido anteriormente.')
+	if '"html":' in source: xbmc.executebuiltin("XBMC.Notification(RatoTV,"+"Pedido efectuado com sucesso."+","+"6000"+"," + addonfolder +"/icon.png)")
+	elif '"Ja fizeste este pedido!"' in source: mensagemok('RatoTV','Lamentamos mas já fez o pedido anteriormente.')
 	else: mensagemok('RatoTV','Não foi possível encontrar o filme/série.','Verifique novamente.')
 
 def pedir_id(url):
@@ -1455,10 +1356,8 @@ def pedir_id(url):
 	source = post_page_free("http://www.ratotv.net/engine/ajax/mws-film.ajax.php",mydata)
 	print "aqui"
 	print source
-	if '"result":"ok"}' in source:
-		xbmc.executebuiltin("XBMC.Notification(RatoTV,"+"Pedido efectuado com sucesso."+","+"6000"+"," + addonfolder +"/icon.png)")
-	elif '"Ja fizeste este pedido!"' in source:
-		mensagemok('RatoTV','Lamentamos mas já fez o pedido anteriormente.')
+	if '"result":"ok"}' in source: xbmc.executebuiltin("XBMC.Notification(RatoTV,"+"Pedido efectuado com sucesso."+","+"6000"+"," + addonfolder +"/icon.png)")
+	elif '"Ja fizeste este pedido!"' in source: mensagemok('RatoTV','Lamentamos mas já fez o pedido anteriormente.')
 	else: mensagemok('RatoTV','Não foi possível encontrar o filme/série.','Verifique novamente.')
 	xbmc.executebuiltin("XBMC.Container.Refresh")
 
@@ -1467,36 +1366,29 @@ def pedir_id(url):
 ####################
 
 def mensagens_conta():
-	try:
-		html_source = post_page("http://www.ratotv.net/index.php?do=pm&folder=inbox",selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	try: html_source = post_page("http://www.ratotv.net/index.php?do=pm&folder=inbox",selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: html_source = ""
 	#print html_source
 	match = re.compile('<a class="pm_list" href="(.+?)">(.+?)</a></td>').findall(html_source)
 	cheia = re.compile('A pasta de mensagens privadas está cheia em: (.+?)">').findall(html_source)
 	num_msg_unread = 0
 	for endereco_msg,sender in match:
-		if "<b>" in sender:
-			num_msg_unread += 1
-	try:
-        	addDir_reg_menu('Mensagens privadas [COLOR green][ [B]'+str(num_msg_unread)+ '[/B] não lida(s) [/COLOR]|[COLOR yellow] '+ cheia[0]+' cheia [/COLOR][COLOR green]][/COLOR]','url',36,artfolder+'definicoes.jpg',True)
+		if "<b>" in sender: num_msg_unread += 1
+	try: addDir_reg_menu('Mensagens privadas [COLOR green][ [B]'+str(num_msg_unread)+ '[/B] não lida(s) [/COLOR]|[COLOR yellow] '+ cheia[0]+' cheia [/COLOR][COLOR green]][/COLOR]','url',36,artfolder+'definicoes.jpg',True)
 	except: pass
 
 
 def listar_pms():
-	try:
-		html_source = post_page("http://www.ratotv.net/index.php?do=pm&folder=inbox",selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	try: html_source = post_page("http://www.ratotv.net/index.php?do=pm&folder=inbox",selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: html_source = ""
 	match = re.compile('<a class="pm_list" href="(.+?)">(.+?)</a></td>').findall(html_source)
 	for endereco_msg,sender in match:
-		if "<b>" in sender:
-			addDir_mensagem('[B]' + sender.replace('<b>','').replace('</b>','')+'[/B]',endereco_msg,37,artfolder+'contactar.jpg',False,"nlida")
-		else:
-			addDir_mensagem(sender,endereco_msg,37,artfolder+'contactar.jpg',False,"lida")
+		if "<b>" in sender: addDir_mensagem('[B]' + sender.replace('<b>','').replace('</b>','')+'[/B]',endereco_msg,37,artfolder+'contactar.jpg',False,"nlida")
+		else: addDir_mensagem(sender,endereco_msg,37,artfolder+'contactar.jpg',False,"lida")
 
 def ler_pm(url):
     print url
-    try:
-        html_source = post_page(url.replace("amp;",""),selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+    try: html_source = post_page(url.replace("amp;",""),selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
     except: html_source = ""
     html_trunk = re.findall('<div class="auth">(.*?)>Responder</a>', html_source, re.DOTALL)
     print html_trunk
@@ -1511,13 +1403,9 @@ def ler_pm(url):
         except: pass
         msg = re.findall('</div>(.*?)<div class="pmlinks">', trunk, re.DOTALL)
         print msg
-        try:
-            text += "Mensagem: \n" + msg[0].replace('<br />','')+ "\n"
+        try: text += "Mensagem: \n" + msg[0].replace('<br />','')+ "\n"
         except: pass
         janela_lateral("Mensagem Privada",text)
-
-
-
 
 def apagar_pm(url):
 	print url
@@ -1525,8 +1413,7 @@ def apagar_pm(url):
 	for letra in url:
 		if letra.isdigit(): pm_id += letra
 	print pm_id
-	try:
-		html_source = post_page("http://www.ratotv.net/index.php?do=pm&doaction=readpm&pmid="+pm_id,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	try: html_source = post_page("http://www.ratotv.net/index.php?do=pm&doaction=readpm&pmid="+pm_id,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: html_source
 	if html_source:
 		match = re.compile("javascript:confirmDelete\('(.+?)'\)\">Apagar</a>").findall(html_source)
@@ -1534,18 +1421,8 @@ def apagar_pm(url):
 			html_source = post_page(match[0].replace('amp;',''),selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 			xbmc.executebuiltin("XBMC.Notification(RatoTV,"+"Mensagem eliminada com sucesso!"+","+"6000"+"," + addonfolder +"/icon.png)")
 			xbmc.executebuiltin("XBMC.Container.Refresh")
-		except:
-			mensagemok('RatoTV','Ocorreu um erro ao apagar a mensagem.')
+		except: mensagemok('RatoTV','Ocorreu um erro ao apagar a mensagem.')
 	else: mensagemok('RatoTV','Ocorreu um erro ao apagar a mensagem.')
-
-
-
-
-
-
-
-
-
 
 #################################################################################
 #                                  FAVORITOS e VISTOS                           #
@@ -1577,8 +1454,7 @@ def adicionar_seguir(url,name,iconimage):
 	print 'A seguir série: '+url
 	id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
 	last_season_num,last_available_episode = get_last_sep(url)
-	try:
-		os.makedirs(seguirpath)
+	try: os.makedirs(seguirpath)
 	except: pass
 	try:
 		NewSeguirFile=os.path.join(seguirpath,id_ratotv+'.txt')
@@ -1599,15 +1475,12 @@ def deixar_seguir(url):
 		os.remove(filename)
 		xbmc.executebuiltin("XBMC.Notification(RatoTV,"+"Série removida com sucesso!"+","+"6000"+"," + addonfolder +"/icon.png)")
 		xbmc.executebuiltin("XBMC.Container.Refresh")
-	except:
-		mensagemok('RatoTV','Ocorreu um erro ao remover série. Informe os developpers deste erro!')
+	except: mensagemok('RatoTV','Ocorreu um erro ao remover série. Informe os developpers deste erro!')
 
 def listar_seguir():
 	seguirpath=os.path.join(datapath,'Seguir')
-	try:
-		dircontents=os.listdir(seguirpath)
-	except:
-		dircontents=[]
+	try: dircontents=os.listdir(seguirpath)
+	except: dircontents=[]
 	print dircontents
 	if dircontents:
 		i=0
@@ -1630,10 +1503,8 @@ def listar_seguir():
 def verificar_novos():
 	text = ''
 	seguirpath=os.path.join(datapath,'Seguir')
-	try:
-		dircontents=os.listdir(seguirpath)
-	except:
-		dircontents=[]
+	try: dircontents=os.listdir(seguirpath)
+	except: dircontents=[]
 	if dircontents:
 		progresso.create('RatoTv', 'A verificar novos episódios nas séries seguidas','')
 		i=0
@@ -1644,8 +1515,7 @@ def verificar_novos():
 			progresso.update(int(((i+1))/(len(dircontents))*100),"A verificar novos episódios nas séries seguidas",seriename)
 			print "progresso", int(((i+1))/(len(dircontents))*100)
 			i +=1
-		if text != '':
-			return janela_lateral('Séries seguidas: ',text)
+		if text != '': return janela_lateral('Séries seguidas: ',text)
 		else: return xbmc.executebuiltin("XBMC.Notification(RatoTV,"+"Não há novos episódios."+","+"6000"+"," + addonfolder +"/icon.png)")
 	else: pass
 
@@ -1694,43 +1564,33 @@ def adicionar_visto(url,season=None,episode=None):
 			if filme_ou_serie == 'movie':
 				url_json_post="http://api.trakt.tv/movie/seen/353f223c2afc3c2050fcb810810fdb49"
 				data['movies'] = [dict()]
-				try:
-					data['movies'][0]['imdb_id'] = infolabels['code']
+				try: data['movies'][0]['imdb_id'] = infolabels['code']
 				except: pass
-				try:
-					data['movies'][0]['title'] = infolabels['originaltitle']
+				try: data['movies'][0]['title'] = infolabels['originaltitle']
 				except: pass
-				try:
-					data['movies'][0]['year'] = infolabels['Year']
+				try: data['movies'][0]['year'] = infolabels['Year']
 				except: pass
 				print 'data final:',data
-				try:
-					json_post(data,url_json_post)
+				try: json_post(data,url_json_post)
 				except: print "Não conseguiu marcar visto no trakt"
 			elif filme_ou_serie == 'tvshow':
 				url_json_post="http://api.trakt.tv/show/episode/seen/353f223c2afc3c2050fcb810810fdb49"
 				data["episodes"] = [{"season": season,"episode": episode}]
-				try:
-					data['imdb_id'] = infolabels['code']
+				try: data['imdb_id'] = infolabels['code']
 				except: pass
-				try:
-					data['title'] = infolabels['originaltitle']
+				try: data['title'] = infolabels['originaltitle']
 				except: pass
-				try:
-					data['year'] = infolabels['Year']
+				try: data['year'] = infolabels['Year']
 				except: pass
 				print 'data final:',data
-				try:
-					json_post(data,url_json_post)
+				try: json_post(data,url_json_post)
 				except: print "Não conseguiu marcar visto no trakt"
 		else:pass
 	print 'Marcando como visto: url: '+url
 	id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
 	vistospath=os.path.join(datapath,'Vistos')
-	try:
-		os.makedirs(vistospath)
-	except:
-		pass
+	try: os.makedirs(vistospath)
+	except: pass
 	if season and episode: NewVistoFile=os.path.join(vistospath,id_ratotv+'-S'+season+'E'+episode+'.txt')
 	else: NewVistoFile=os.path.join(vistospath,id_ratotv+'.txt')
 	if not os.path.exists(NewVistoFile):
@@ -1761,48 +1621,40 @@ def check_visto(url,season=None,episode=None):
     if os.path.exists(NewVistoFile): return True
     else: return False
 
-
 #################################################################################
 #FUNCOES API'S - TMDB e FANART.TV                                               #
 #################################################################################
 
 #Trakt.tv
-
-
 class trakt_api:
     api_key = '353f223c2afc3c2050fcb810810fdb49'
     def next_episode(self,tvdbid):
         url_api = 'http://api.trakt.tv/show/summary.json/' + self.api_key + '/' + tvdbid + '/extended'
-        try:
-            data = json_get(url_api)
+        try: data = json_get(url_api)
         except: data = ''
         return data
 
     def search_movie(self,query):
         url_api = 'http://api.trakt.tv/search/movies.json/'+ self.api_key + '?query='+str(query)
-        try:
-            data = json_get(url_api)
+        try: data = json_get(url_api)
         except: data = ''
         return data
 
     def search_show(self,query):
         url_api = 'http://api.trakt.tv/search/shows.json/'+ self.api_key + '?query='+str(query)
-        try:
-            data = json_get(url_api)
+        try: data = json_get(url_api)
         except: data = ''
         return data
 
     def return_watched_movies(self,query):
         url_api = 'http://api.trakt.tv/user/library/movies/watched.json/'+ self.api_key +'/' + str(query)
-        try:
-            data = json_get(url_api)
+        try: data = json_get(url_api)
         except: data = ''
         return data
 
     def return_watched_shows(self,query):
         url_api = 'http://api.trakt.tv/user/library/shows/watched.json/'+ self.api_key +'/' + str(query)
-        try:
-            data = json_get(url_api)
+        try: data = json_get(url_api)
         except: data = ''
         return data
 
@@ -1811,15 +1663,13 @@ class trakt_api:
 
     def shows_seasons(self,tvdbid):
 	url_api = 'http://api.trakt.tv/show/seasons.json/'+ self.api_key +'/' + str(tvdbid)
-        try:
-            data = json_get(url_api)
+        try: data = json_get(url_api)
         except: data = ''
         return data
 
     def shows_season(self,tvdbid,season):
 	url_api = 'http://api.trakt.tv/show/season.json/'+ self.api_key +'/' + str(tvdbid) + '/' + str(season)
-        try:
-            data = json_get(url_api)
+        try: data = json_get(url_api)
         except: data = ''
         return data
 
@@ -1829,14 +1679,11 @@ class trakt_api:
 	json_code = self.shows_season(id_tvdb,int(season))
 	for entry in json_code:
 		if int(entry['episode']) == int(episode):
-			try:
-				screen = entry['screen']
+			try: screen = entry['screen']
 			except: pass
 			break
 	return screen
 	
-
-
 #THEMOVIEDB
 
 class themoviedb_api:
@@ -1844,28 +1691,20 @@ class themoviedb_api:
     tmdb_base_url = 'http://d3gtl9l2a4fn1j.cloudfront.net/t/p/w1280'
     def fanart_and_id(self,movie_info_original_title,movie_info_year):
         url_tmdb = 'http://api.themoviedb.org/3/search/movie?api_key=' + self.api_key + '&query=' + urllib.quote_plus(movie_info_original_title) + '&year=' + movie_info_year
-        try:
-            data = json_get(url_tmdb)
+        try: data = json_get(url_tmdb)
         except: data = ''
-        try:
-            fanart=self.tmdb_base_url + data['results'][0]['backdrop_path']
-        except:
-            fanart=fanart_rato_tv
-        try:
-            id_tmdb = data['results'][0]['id']
-        except:
-            id_tmdb=''
+        try: fanart=self.tmdb_base_url + data['results'][0]['backdrop_path']
+        except: fanart=fanart_rato_tv
+        try: id_tmdb = data['results'][0]['id']
+        except: id_tmdb=''
         return fanart,str(id_tmdb)
 
     def trailer(self,id_tmdb):
         url_tmdb = 'http://api.themoviedb.org/3/movie/' + id_tmdb +'/trailers?api_key=' + self.api_key
-        try:
-            data = json_get(url_tmdb)
+        try: data = json_get(url_tmdb)
         except: data = ''
-        try:
-            youtube_id = 'plugin://plugin.video.youtube/?action=play_video&videoid=' + str(data['youtube'][0]['source'])
-        except:
-            youtube_id= ''
+        try: youtube_id = 'plugin://plugin.video.youtube/?action=play_video&videoid=' + str(data['youtube'][0]['source'])
+        except: youtube_id= ''
         return str(youtube_id)
 
 #THETVDB
@@ -1977,8 +1816,7 @@ def exists(url):
     try:
         r = urllib2.urlopen(url)
         return True
-    except:
-        return False
+    except: return False
 
 #Thanks fightnight
 def handle_wait(time_to_wait,title,text,segunda=''):
@@ -1998,8 +1836,7 @@ def handle_wait(time_to_wait,title,text,segunda=''):
             if (progresso.iscanceled()):
                   cancelled = True
                   break
-      if cancelled == True:
-            return False
+      if cancelled == True: return False
       else:
 	    progresso.close()
             return True
@@ -2031,12 +1868,10 @@ def procurar_novas_series():
 def transferir_biblioteca_filmes(name):
 	#verifica se a pasta para o download da biblioteca está definida
 
-	if selfAddon.getSetting('libraryfolder'):
-		pass
+	if selfAddon.getSetting('libraryfolder'): pass
 	else:
 		ok=mensagemok('RatoTV','Não definiu uma pasta para a biblioteca nas definições!','Por favor defina-a e tente novamente.')
 		sys.exit(0)
-
 	canceled = False
 	comando = name
 	url_current = base_url + 'movies/page/1/'
@@ -2049,12 +1884,9 @@ def transferir_biblioteca_filmes(name):
 			ok=mensagemok('RatoTV','Tem o serviço de procura de novos filmes activo.','Mas nao transferiu a biblioteca...','Saindo.')
 			sys.exit(0)
 
-	if not xbmcvfs.exists(movie_database_folder):
-		xbmcvfs.mkdir(movie_database_folder)
-	if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'movies')):
-		xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'movies'))
-	try:
-		html_source=post_page(url_current,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	if not xbmcvfs.exists(movie_database_folder): xbmcvfs.mkdir(movie_database_folder)
+	if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'movies')): xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'movies'))
+	try: html_source=post_page(url_current,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: html_source = ''
 	if html_source:
 		current_page= re.compile('/page/(\d+)/').findall(url_current)[0]
@@ -2064,8 +1896,7 @@ def transferir_biblioteca_filmes(name):
 		except: total_paginas=re.compile('.*/page/(.+?)/">(.+?)</a> ').findall(html_source)[0]
 		current_page = int(current_page)
 		html_source_trunk = re.findall('<div class="shortpost">(.*?)<\/div>\n<\/div>\n<\/div>', html_source, re.DOTALL)
-		if comando == 'todos':
-			progresso.create('RatoTV - Biblioteca XBMC', 'A transferir biblioteca de Filmes...Aguarde...' ,'Página '+str(current_page)+'/'+str(total_paginas))
+		if comando == 'todos': progresso.create('RatoTV - Biblioteca XBMC', 'A transferir biblioteca de Filmes...Aguarde...' ,'Página '+str(current_page)+'/'+str(total_paginas))
 		i=0
 		while int(current_page) < int(total_paginas):
 			if comando == 'todos':
@@ -2075,17 +1906,14 @@ def transferir_biblioteca_filmes(name):
 					progresso.close()
 					break
 			if current_page != 1:
-				try:
-					html_source=post_page(pag_seguinte,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+				try: html_source=post_page(pag_seguinte,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 				except: html_source = ''
 				pag_seguinte = re.compile('<div class="next"><a href="(.+?)">').findall(html_source)[0]
 				html_source_trunk = re.findall('<div class="shortpost">(.*?)<\/div>\n<\/div>\n<\/div>', html_source, re.DOTALL)
 			for trunk in html_source_trunk:
 				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(trunk)
-				if comando == 'todos':
-					progresso.update(int((float(current_page)/int(total_paginas)*100)),'A transferir biblioteca de Filmes...Aguarde...',infolabels['originaltitle'] + ' (' + infolabels['Year'] +')','Página '+str(current_page)+'/'+str(total_paginas))
-				if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')')):
-					xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')'))
+				if comando == 'todos': progresso.update(int((float(current_page)/int(total_paginas)*100)),'A transferir biblioteca de Filmes...Aguarde...',infolabels['originaltitle'] + ' (' + infolabels['Year'] +')','Página '+str(current_page)+'/'+str(total_paginas))
+				if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')')): xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')'))
 				strm_filme = os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')',infolabels['originaltitle']+'.strm')
 				strm_contents = 'plugin://plugin.video.ratotv/?url=' + url +'&mode=44&name=' + urllib.quote_plus(infolabels['originaltitle'])
 				id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
@@ -2097,22 +1925,17 @@ def transferir_biblioteca_filmes(name):
 						current_page = int(total_paginas)
 						break
 			#salva ficheiro na userdata para saber se item ja foi transferido anteriormente
-				if not xbmcvfs.exists(movie_database_file):
-					save(movie_database_file,'check')
+				if not xbmcvfs.exists(movie_database_file): save(movie_database_file,'check')
 			#salva stream
 					save(strm_filme,strm_contents)
 					i +=1
 
 			current_page +=1
-			if comando == 'todos':
-				progresso.update(int((float(current_page)/int(total_paginas)*100)),'A transferir biblioteca de Filmes...Aguarde...',infolabels['originaltitle'] + ' (' + infolabels['Year'] +')','Página '+str(current_page)+'/'+str(total_paginas))
+			if comando == 'todos': progresso.update(int((float(current_page)/int(total_paginas)*100)),'A transferir biblioteca de Filmes...Aguarde...',infolabels['originaltitle'] + ' (' + infolabels['Year'] +')','Página '+str(current_page)+'/'+str(total_paginas))
 	if comando == 'todos' and not canceled:
 		progresso.update(100,'Tarefa realizada com sucesso')
 		progresso.close()
-	if not canceled and i >= 1:
-		xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
-			
-	
+	if not canceled and i >= 1: xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
 
 def listar_series_subscritas():
 	folder = os.path.join(datapath,'tvshows-subscriptions')
@@ -2123,8 +1946,7 @@ def listar_series_subscritas():
 			serie_data = readfile(seriefile) 
 			serie_array = serie_data.split('|')
 			infolabels = {"Title": serie_array[0]}
-			try:
-				addDir_filme(serie_array[0],serie_array[1],10,serie_array[2],infolabels,fanart_rato_tv,len(files),True,'tvshow',None,None)
+			try: addDir_filme(serie_array[0],serie_array[1],10,serie_array[2],infolabels,fanart_rato_tv,len(files),True,'tvshow',None,None)
 			except: pass
 		homepage_view()
 	else:
@@ -2152,29 +1974,23 @@ def remover_subscricao_serie(name,url,iconimage):
 			xbmcvfs.delete(ficheiro_apagar)
 		xbmcvfs.rmdir(folder_show)
 		xbmc.executebuiltin("XBMC.CleanLibrary(video)")
-	else:
-		pass
+	else: pass
 	xbmc.executebuiltin("XBMC.Notification(RatoTv,Removida subscrição com sucesso!,'10000',"+addonfolder+"/icon.png)")
 	xbmc.executebuiltin("XBMC.Container.Refresh")
-
 
 def subscrever_serie(name,url,iconimage,daemon=False):
 	print "Subscrever series",name,url,iconimage
 	id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
-	if not xbmcvfs.exists(os.path.join(datapath,'tvshows-subscriptions')):
-			xbmcvfs.mkdir(os.path.join(datapath,'tvshows-subscriptions'))
+	if not xbmcvfs.exists(os.path.join(datapath,'tvshows-subscriptions')): xbmcvfs.mkdir(os.path.join(datapath,'tvshows-subscriptions'))
 	save(os.path.join(datapath,'tvshows-subscriptions',str(id_ratotv) +'.txt'),name + '|'+url+'|'+iconimage)
 	print selfAddon.getSetting('libraryfolder')
 	if selfAddon.getSetting('libraryfolder'):
-		if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows')):
-			xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows'))
+		if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows')): xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows'))
 		iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,"fanart")
-		if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle)):
-			xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle))
+		if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle)): xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle))
 		total_seasons = len(serie_dict_temporadas.keys())
 		for season in serie_dict_temporadas.keys():
-			if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle,'Season ' + str(season))):
-				xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle,'Season ' + str(season)))
+			if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle,'Season ' + str(season))): xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows',originaltitle,'Season ' + str(season)))
 			temp,year,episodios_dict = listar_temporadas_get_dictionary(" "+str(int(season)),url,"fanart","iconimage",str(serie_dict_temporadas))
 			for episode in episodios_dict.keys():
 				string = 'S'+str(season)+'E'+str(episode)
@@ -2184,16 +2000,14 @@ def subscrever_serie(name,url,iconimage,daemon=False):
 			xbmc.executebuiltin("XBMC.Notification(RatoTv,Série subscrita com sucesso!,'10000',"+addonfolder+"/icon.png)")
 			xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
 			xbmc.executebuiltin("XBMC.Container.Refresh")	
-	else:
-		print "falhou"
+	else: print "falhou"
 	return
 
 
 def play_from_outside(name,url):
 	listitem = xbmcgui.ListItem(name, iconImage="iconimage", thumbnailImage="iconimage")
 	xbmcplugin.setResolvedUrl(int(sys.argv[1]),False,listitem)
-	try:
-		html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	try: html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: print "ERRO FALTA FAZER",sys.exit(0)
 	match = re.compile('<img src="/templates/ratotvv2/dleimages/comments-img2.png"/><a href="http://www.ratotv.net/(.+?)/">.+?</a>').findall(html_source)
 	if match[0] == 'tvshows':
@@ -2203,8 +2017,7 @@ def play_from_outside(name,url):
 			int(match[0][0])
 			int(match[0][1])
 			proceed = True
-		except:
-			proceed = False
+		except: proceed = False
 		if proceed:
 			iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,"fanart")
 			temporada = match[0][0]
@@ -2224,38 +2037,27 @@ def play_from_outside(name,url):
 						break
 				if proceed:
 					screen = ''
-					if selfAddon.getSetting('series-episode-thumbnails') == 'true':
-						screen = trakt_api().get_showepisode_thumb(originaltitle,year,temporada,episodio)
-					if screen:
-						screenthumb = screen
-					else:
-						screenthumb = str(episodios_dict[str(int(episodio))]["thumbnail"])
-					if "srt" in episodios_dict[str(int(episodio))].keys():
-						episodios_opcao(str(episodios_dict[str(int(episodio))]["description"]),url,screenthumb,str(episodios_dict[str(int(episodio))]["source"]),str(episodios_dict[str(int(episodio))]["srt"]),originaltitle,temporada,episodio)
-					else:
-						episodios_opcao(str(episodios_dict[str(int(episodio))]["description"]),url,screenthumb,str(episodios_dict[str(int(episodio))]["source"]),'',originaltitle,temporada,episodio)
-				else:
-					print "nao encontrou o episodio. FALTA MOSTRAR ERRO"
+					if selfAddon.getSetting('series-episode-thumbnails') == 'true': screen = trakt_api().get_showepisode_thumb(originaltitle,year,temporada,episodio)
+					if screen: screenthumb = screen
+					else: screenthumb = str(episodios_dict[str(int(episodio))]["thumbnail"])
+					if "srt" in episodios_dict[str(int(episodio))].keys(): episodios_opcao(str(episodios_dict[str(int(episodio))]["description"]),url,screenthumb,str(episodios_dict[str(int(episodio))]["source"]),str(episodios_dict[str(int(episodio))]["srt"]),originaltitle,temporada,episodio)
+					else: episodios_opcao(str(episodios_dict[str(int(episodio))]["description"]),url,screenthumb,str(episodios_dict[str(int(episodio))]["source"]),'',originaltitle,temporada,episodio)
+				else: print "nao encontrou o episodio. FALTA MOSTRAR ERRO"
 	if match[0] == 'movies':
 		print "Movie detectado"
         	html_source_trunk = re.findall('<div class="shortpost(.*?)Adicionar um comentário', html_source, re.DOTALL)
 		infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_source_trunk[0])
 		stream_qualidade(url,name,iconimage)
-	else:
-		print "MENSAGEM DE ERRO FALTA"
-
-
+	else: print "MENSAGEM DE ERRO FALTA"
 
 def listar_temporadas_get_dictionary(name,url,fanart,iconimage,dicionario):
 	try:
 		#verificar se originaltitle e year estao definidos
 		print originaltitle,year
 		original_year = True
-	except:
-		original_year = False
+	except: original_year = False
 	if not original_year:
-		try:
-			html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+		try: html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 		except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente \n ou contacte um dos administradores do site.');sys.exit(0)
 		if html_source:
 			originaltitle=re.compile('<strong>Título Original: </strong>(.+?)</li>').findall(html_source)[0]
@@ -2319,15 +2121,11 @@ def listar_temporadas(name,url,fanart,iconimage,dicionario):
 					try: screenimage = key['images']['screen'];screen_checker = True
 					except:screenimage = str(episodios_dict[episodio]["thumbnail"])
 				aval +=1
-			if aval == len(json_code) and screenimage == None:
-				screenimage = str(episodios_dict[episodio]["thumbnail"])
+			if aval == len(json_code) and screenimage == None: screenimage = str(episodios_dict[episodio]["thumbnail"])
 			else:pass
-		else:
-			screenimage = str(episodios_dict[episodio]["thumbnail"])
-		if "srt" in episodios_dict[episodio].keys():
-			addDir_episodio(name,"[B][COLOR green]Episódio " + str(episodio) + "[/B][/COLOR]",str(episodios_dict[episodio]["description"]),url,temporada,episodio,str(episodios_dict[episodio]["source"]),str(episodios_dict[episodio]["srt"]),screenimage,fanart)
-		else:
-			addDir_episodio(name,"[B][COLOR green]Episódio " + str(episodio) + "[/B][/COLOR]",str(episodios_dict[episodio]["description"]),url,temporada,episodio,str(episodios_dict[episodio]["source"]),"",screenimage,fanart)
+		else: screenimage = str(episodios_dict[episodio]["thumbnail"])
+		if "srt" in episodios_dict[episodio].keys(): addDir_episodio(name,"[B][COLOR green]Episódio " + str(episodio) + "[/B][/COLOR]",str(episodios_dict[episodio]["description"]),url,temporada,episodio,str(episodios_dict[episodio]["source"]),str(episodios_dict[episodio]["srt"]),screenimage,fanart)
+		else: addDir_episodio(name,"[B][COLOR green]Episódio " + str(episodio) + "[/B][/COLOR]",str(episodios_dict[episodio]["description"]),url,temporada,episodio,str(episodios_dict[episodio]["source"]),"",screenimage,fanart)
 	episodes_view()
 
 def keyfunc(key): return float(key.replace(" e ","."))
@@ -2358,9 +2156,6 @@ def episodios_opcao(name,url,iconimage,sources,srt,originaltitle,season,episode)
 		if "../" in srt[int(opcao)-1]: srt[int(opcao)-1] = srt[int(opcao)-1].replace("../",base_url)
 		player_rato(source[int(opcao)-1],srt[int(opcao)-1],name,url,iconimage,infolabels,season,episode)
 
-
-
-
 ########################################################################################################
 #FUNCOES DIRECTORIAS                                                                                   #
 ########################################################################################################
@@ -2371,8 +2166,7 @@ def get_params():
     if len(paramstring)>=2:
         params=sys.argv[2]
         cleanedparams=params.replace('?','')
-        if (params[len(params)-1]=='/'):
-            params=params[0:len(params)-2]
+        if (params[len(params)-1]=='/'): params=params[0:len(params)-2]
         pairsofparams=cleanedparams.split('&')
         param={}
         for i in range(len(pairsofparams)):
@@ -2382,7 +2176,6 @@ def get_params():
                 param[splitparams[0]]=splitparams[1]
     return param
 
-
 def addLink(name,url,iconimage):
     ok=True
     liz=xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
@@ -2390,7 +2183,6 @@ def addLink(name,url,iconimage):
     liz.setInfo( type="Video", infoLabels={ "Title": name } )
     ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=liz)
     return ok
-
 
 def addDir_mensagem(name,url,mode,iconimage,folder,lida,fanart=fanart_rato_tv):
 	print lida
@@ -2420,8 +2212,7 @@ def addDir_reg_menu(name,url,mode,iconimage,folder,fanart=fanart_rato_tv):
 
 def addDir_temporada(name,url,dicionario,mode,iconimage,folder,fanart):
     u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&dicionario="+urllib.quote_plus(dicionario)
-    try:
-	u += "&year="+urllib.quote_plus(year)
+    try: u += "&year="+urllib.quote_plus(year)
     except:pass
     if fanart: u+= '&fanart='+urllib.quote_plus(fanart)
     if originaltitle: u+="&originaltitle="+urllib.quote_plus(originaltitle)
@@ -2447,8 +2238,7 @@ def addDir_filme(name,url,mode,iconimage,infolabels,fanart,totalit,pasta,tipo,HD
     try: u += "&imdb_id="+infolabels['code']
     except: pass
     try: u += "&originaltitle="+infolabels['originaltitle']
-    except:
-	pass
+    except: pass
     try: id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
     except: id_ratotv = None
     print id_ratotv
@@ -2502,12 +2292,9 @@ def addDir_filme(name,url,mode,iconimage,infolabels,fanart,totalit,pasta,tipo,HD
         contextmen.append(('Marcar como não visto', 'XBMC.RunPlugin(%s?mode=22&url=%s&)' % (sys.argv[0], url)))
         overlay=7
         playcount=1
-    elif visto==False:
-        contextmen.append(('Marcar como visto', 'XBMC.RunPlugin(%s?mode=21&url=%s)' % (sys.argv[0], url)))
-    if favorito==True:
-        contextmen.append(('Remover dos favoritos', 'XBMC.RunPlugin(%s?mode=17&url=%s)' % (sys.argv[0], url)))
-    elif favorito==False:
-        contextmen.append(('Adicionar aos favoritos', 'XBMC.RunPlugin(%s?mode=14&url=%s)' % (sys.argv[0], url)))
+    elif visto==False: contextmen.append(('Marcar como visto', 'XBMC.RunPlugin(%s?mode=21&url=%s)' % (sys.argv[0], url)))
+    if favorito==True: contextmen.append(('Remover dos favoritos', 'XBMC.RunPlugin(%s?mode=17&url=%s)' % (sys.argv[0], url)))
+    elif favorito==False: contextmen.append(('Adicionar aos favoritos', 'XBMC.RunPlugin(%s?mode=14&url=%s)' % (sys.argv[0], url)))
     infolabels["overlay"]=overlay
     infolabels["playcount"]=playcount
     liz=xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
@@ -2562,12 +2349,9 @@ def addDir_episodio(nomeSerie,title,description,url,temporada,episodio,sources,s
         playcount=0
     contextmen.append(('Ver detalhes', 'XBMC.Action(Info)')); contextmen.append(('Reportar problema', 'XBMC.RunPlugin(%s?mode=24&url=%s&)' % (sys.argv[0], url)))
     contextmen.append(('Estatísticas Trakt', 'XBMC.RunPlugin(%s?mode=30&name=%s&url=%s&iconimage=%s&season=%s&episode=%s)' % (sys.argv[0], name, url, iconimage,temporada,episodio)))
-    if title != [] and description !=[]:
-            titulo = '[COLOR green]' + title + '[/COLOR]' + '-'+ description
-    elif title == [] and description !=[]:
-            titulo = description
-    elif title !=[] and description == []:
-            titulo = title
+    if title != [] and description !=[]: titulo = '[COLOR green]' + title + '[/COLOR]' + '-'+ description
+    elif title == [] and description !=[]: titulo = description
+    elif title !=[] and description == []: titulo = title
     else: titulo = 'N/A'
     liz=xbmcgui.ListItem(titulo, iconImage="DefaultFolder.png", thumbnailImage=thumbnail)
     if fanart: liz.setProperty('fanart_image', fanart)
@@ -2581,15 +2365,11 @@ def addDir_episodio(nomeSerie,title,description,url,temporada,episodio,sources,s
     ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=False,totalItems=1)
     return ok
 
-
 ############################### GOOGLE ANALYTICS XBMC by mickey ->http://www.xbmchub.com/forums/general-python-development/4747-%5Bdev-release%5D-final-google-analytics-your-plugin.html
 
 def parseDate(dateString):
-    try:
-        return datetime.datetime.fromtimestamp(time.mktime(time.strptime(dateString.encode('utf-8', 'replace'), "%Y-%m-%d %H:%M:%S")))
-    except:
-        return datetime.datetime.today() - datetime.timedelta(days = 1) #force update
-
+    try: return datetime.datetime.fromtimestamp(time.mktime(time.strptime(dateString.encode('utf-8', 'replace'), "%Y-%m-%d %H:%M:%S")))
+    except: return datetime.datetime.today() - datetime.timedelta(days = 1) #force update
 
 def checkGA():
 
@@ -2603,12 +2383,10 @@ def checkGA():
     nSecs = delta.seconds
 
     doUpdate = (nDays > 0) or (nSecs > threshold)
-    if not doUpdate:
-        return
+    if not doUpdate: return
 
     ADDON.setSetting('ga_time', str(now).split('.')[0])
     APP_LAUNCH()
-
 
 def send_request_to_google_analytics(utm_url):
     ua='Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'
@@ -2618,16 +2396,13 @@ def send_request_to_google_analytics(utm_url):
                                     {'User-Agent':ua}
                                      )
         response = urllib2.urlopen(req).read()
-    except:
-        print ("GA fail: %s" % utm_url)
+    except: print ("GA fail: %s" % utm_url)
     return response
 
 def GA(group,name):
     try:
-        try:
-            from hashlib import md5
-        except:
-            from md5 import md5
+        try: from hashlib import md5
+        except: from md5 import md5
         from random import randint
         import time
         from urllib import unquote, quote
@@ -2675,28 +2450,21 @@ def GA(group,name):
         print "============================ POSTING ANALYTICS ============================"
         send_request_to_google_analytics(utm_url)
 
-    except:
-        print "================  CANNOT POST TO ANALYTICS  ================"
-
+    except: print "================  CANNOT POST TO ANALYTICS  ================"
 
 def APP_LAUNCH():
     versionNumber = int(xbmc.getInfoLabel("System.BuildVersion" )[0:2])
     if versionNumber < 12:
         if xbmc.getCondVisibility('system.platform.osx'):
-            if xbmc.getCondVisibility('system.platform.atv2'):
-                log_path = '/var/mobile/Library/Preferences'
-            else:
-                log_path = os.path.join(os.path.expanduser('~'), 'Library/Logs')
-        elif xbmc.getCondVisibility('system.platform.ios'):
-            log_path = '/var/mobile/Library/Preferences'
+            if xbmc.getCondVisibility('system.platform.atv2'): log_path = '/var/mobile/Library/Preferences'
+            else: log_path = os.path.join(os.path.expanduser('~'), 'Library/Logs')
+        elif xbmc.getCondVisibility('system.platform.ios'): log_path = '/var/mobile/Library/Preferences'
         elif xbmc.getCondVisibility('system.platform.windows'):
             log_path = xbmc.translatePath('special://home')
             log = os.path.join(log_path, 'xbmc.log')
             logfile = open(log, 'r').read()
-        elif xbmc.getCondVisibility('system.platform.linux'):
-            log_path = xbmc.translatePath('special://home/temp')
-        else:
-            log_path = xbmc.translatePath('special://logpath')
+        elif xbmc.getCondVisibility('system.platform.linux'): log_path = xbmc.translatePath('special://home/temp')
+        else: log_path = xbmc.translatePath('special://logpath')
         log = os.path.join(log_path, 'xbmc.log')
         logfile = open(log, 'r').read()
         match=re.compile('Starting XBMC \((.+?) Git:.+?Platform: (.+?)\. Built.+?').findall(logfile)
@@ -2710,10 +2478,8 @@ def APP_LAUNCH():
         logfile='Starting XBMC (Unknown Git:.+?Platform: Unknown. Built.+?'
         match=re.compile('Starting XBMC \((.+?) Git:.+?Platform: (.+?)\. Built.+?').findall(logfile)
     print '==========================   '+PATH+' '+VERSION+'  =========================='
-    try:
-        from hashlib import md5
-    except:
-        from md5 import md5
+    try: from hashlib import md5
+    except: from md5 import md5
     from random import randint
     import time
     from urllib import unquote, quote
@@ -2722,12 +2488,10 @@ def APP_LAUNCH():
     import platform
     VISITOR = ADDON.getSetting('ga_visitor')
     for build, PLATFORM in match:
-        if re.search('12',build[0:2],re.IGNORECASE):
-            build="Frodo"
-        if re.search('11',build[0:2],re.IGNORECASE):
-            build="Eden"
-        if re.search('13',build[0:2],re.IGNORECASE):
-            build="Gotham"
+        if re.search('12',build[0:2],re.IGNORECASE): build="Frodo"
+        if re.search('11',build[0:2],re.IGNORECASE): build="Eden"
+        if re.search('13',build[0:2],re.IGNORECASE): build="Gotham"
+        if re.search('14',build[0:2],re.IGNORECASE): build="Helix"        
         print build
         print PLATFORM
         utm_gif_location = "http://www.google-analytics.com/__utm.gif"
@@ -2742,12 +2506,9 @@ def APP_LAUNCH():
         try:
             print "============================ POSTING APP LAUNCH TRACK EVENT ============================"
             send_request_to_google_analytics(utm_track)
-        except:
-            print "============================  CANNOT POST APP LAUNCH TRACK EVENT ============================"
-
+        except: print "============================  CANNOT POST APP LAUNCH TRACK EVENT ============================"
 
 checkGA()
-
 
 ############################################################################################################
 #NAVEGAÇÃO												   #
@@ -2822,7 +2583,6 @@ print 'dicionario='+str(dicionario)
 print 'seriesName='+str(seriesName)
 print 'year='+str(year)
 
-
 ###############################################################################################################
 # MODOS                                                                                                       #
 ###############################################################################################################
@@ -2830,101 +2590,53 @@ print 'year='+str(year)
 if mode==None or url==None or len(url)<1:
     print ""
     Menu_principal()
-
 elif mode==1:
     print ""
     Menu_principal_filmes()
-
 elif mode==2: listar_media(url,2)
-
 elif mode==3: stream_qualidade(url,name,iconimage)
-
 elif mode==4: pesquisa(base_url)
-
 elif mode==5: Menu_categorias_filmes()
-
 elif mode==6: filmes_homepage(name,url)
-
 elif mode==7: comment(url)
-
 elif mode==8: Menu_principal_series()
-
 elif mode==9: alterar_definicoes()
-
 elif mode==10: series_seasons(url,name,fanart)
-
 elif mode==11: season_episodes_um(url,name,season,fanart)
-
 elif mode==12: ler_comentarios(url,'')
-
 elif mode==13: pedir_serie_menu()
-
 elif mode==14: add_to_favourites(url)
-
 elif mode==15: listar_favoritos(url)
-
 elif mode==16: listar_pesquisa(url)
-
 elif mode==17: remover_favoritos(url)
-
 elif mode==18: play_trailer(infolabels_trailer)
-
 elif mode==19: votar_ratotv()
-
 elif mode==21: adicionar_visto(url,season,episode)
-
 elif mode==22: remover_visto(url,season,episode)
-
 elif mode==23: play_video(name,url,iconimage,sources,srt,seriesName,season,episode)
-
 elif mode==24: reportar(url)
-
 elif mode==25: adicionar_seguir(url,name,iconimage)
-
 elif mode==26: listar_seguir()
-
 elif mode==27: deixar_seguir(url)
-
 elif mode==28: proximo_episodio(url)
-
 elif mode==29: teste("S01E05","http://www.ratotv.net/movies/4633-iron-sky.html")
-
 elif mode==30: estatisticas_trakt(url)
-
 elif mode==31: download_qualidade(url,name,iconimage)
-
 elif mode==32: season_episodes_dois(url,name,season,fanart)
-
 elif mode==33: menu_pedidos(url)
-
 elif mode==34: pedir_id(url)
-
 elif mode==35: pedir_imdb(url)
-
 elif mode==36: listar_pms()
-
 elif mode==37: ler_pm(url)
-
 elif mode==38: apagar_pm(url)
-
 elif mode==39: listar_temporadas(name,url,fanart,iconimage,dicionario)
-
 elif mode==40: episodios_opcao(name,url,iconimage,sources,srt,originaltitle,season,episode)
-
 elif mode==41: pesquisa_ano(url)
-
 elif mode==42: menu_ano()
-
 elif mode==43: subscrever_serie(name,url,iconimage)
-
 elif mode==44: play_from_outside(name,url)
-
 elif mode==45: listar_series_subscritas()
-
 elif mode==46: remover_subscricao_serie(name,url,iconimage)
-
 elif mode==47: transferir_biblioteca_filmes('novos')
-
 elif mode==48: procurar_novas_series()
-
 if mode != 9: xbmcplugin.endOfDirectory(int(sys.argv[1]))
