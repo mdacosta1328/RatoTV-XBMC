@@ -37,9 +37,12 @@
       <setting type="action" label="Procurar novos episódios agora" option="close" action="RunPlugin(plugin://plugin.video.ratotv/?mode=48)" />
       <setting label="[B][COLOR green]Filmes:[/B][/COLOR]" type="lsep" />
       <setting id="filmes-library" type="bool" label="Procurar novos filmes (service.py)" default="false"/>
-      <setting type="action" label="Transferir toda a biblioteca de filmes" option="close" action="RunPlugin(plugin://plugin.video.ratotv/?mode=47)" />
-      <setting type="action" label="Procurar novos filmes agora" option="close" action="RunPlugin(plugin://plugin.video.ratotv/?mode=49)" />
-   </category>
+      <setting type="action" label="Transferir toda a biblioteca de filmes"  action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=47&name=todos)" />
+      <setting type="action" label="Procurar novos filmes agora" option="close" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=49)" />
+      <setting label="[B][COLOR green]Gestão da biblioteca XBMC:[/B][/COLOR]" type="lsep" />
+      <setting type="action" label="Actualizar biblioteca"  action="XBMC.UpdateLibrary(video)" />
+      <setting type="action" label="'Limpar' a biblioteca" option="close" action="XBMC.CleanLibrary(video)" />
+   </category>   
    <category label="Tipos de vista">
       <setting label="[B][COLOR green]Definições de vista:[/B][/COLOR]" type="lsep" />
      <setting id="menu-view" type="enum" label="Vista - Menus" values="Lista|Lista Grande" default="0"/>
