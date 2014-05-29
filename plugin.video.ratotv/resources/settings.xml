@@ -42,7 +42,7 @@
       <setting label="[B][COLOR green]Gestão da biblioteca XBMC:[/B][/COLOR]" type="lsep" />
       <setting type="action" label="Actualizar biblioteca"  action="XBMC.UpdateLibrary(video)" />
       <setting type="action" label="'Limpar' a biblioteca" option="close" action="XBMC.CleanLibrary(video)" />
-   </category>   
+   </category>
    <category label="Tipos de vista">
       <setting label="[B][COLOR green]Definições de vista:[/B][/COLOR]" type="lsep" />
      <setting id="menu-view" type="enum" label="Vista - Menus" values="Lista|Lista Grande" default="0"/>
