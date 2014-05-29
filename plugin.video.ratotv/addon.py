@@ -243,10 +243,10 @@ def stream_qualidade(url,name,iconimage):
 	num_opcoes = len(opcao)
 	if num_opcoes == 1: opcao = "1"
 	elif num_opcoes == 2:
-		janela2qualidades("")
+		janela2qualidades()
 		opcao = readfile(datapath + "option.txt")
 	elif num_opcoes == 3:
-		janela3qualidades("")
+		janela3qualidades()
 		opcao = readfile(datapath + "option.txt")
 	else: ok=mensagemok('RatoTV','Ocorreu um erro. Tente novamente.')
 	if opcao == "10": sys.exit(0)
@@ -728,10 +728,10 @@ def download_qualidade(url,name,iconimage):
 		num_opcoes = len(opcao)
 		if num_opcoes == 1: opcao = "1"
 		elif num_opcoes == 2:
-			janela2qualidades("")
+			janela2qualidades()
 			opcao = readfile(datapath + "option.txt")
 		elif num_opcoes == 3:
-			janela3qualidades("")
+			janela3qualidades()
 			opcao = readfile(datapath + "option.txt")
 		else: ok=mensagemok('RatoTV','Ocorreu um erro. Tente novamente.')
 		if opcao == "1":
@@ -1211,7 +1211,7 @@ def estatisticas_trakt(url):
 
 
 #class 2 qualidades
-def janela2qualidades(prioridade):
+def janela2qualidades(prioridade=None):
 	if selfAddon.getSetting('fonte-auto') == "false":
 		ui = qualidades_duas('2qualidades.xml',addonfolder,'Default','')
 		ui.doModal()
@@ -1276,7 +1276,7 @@ class qualidades_duas(xbmcgui.WindowXMLDialog):
 
 
 #class 3 qualidades
-def janela3qualidades(prioridade):
+def janela3qualidades(prioridade=None):
 	if selfAddon.getSetting('fonte-auto') == "false":
 		ui = qualidades('3qualidades.xml',addonfolder,'Default','')
 		ui.doModal()
@@ -2254,10 +2254,10 @@ def episodios_opcao(name,url,iconimage,sources,srt,originaltitle,season,episode)
 	num_opcoes = len(source)
 	if num_opcoes == 1: opcao = "1"
 	elif num_opcoes == 2:
-		janela2qualidades("")
+		janela2qualidades()
 		opcao = readfile(datapath + "option.txt")
 	elif num_opcoes == 3:
-		janela3qualidades("")
+		janela3qualidades()
 		opcao = readfile(datapath + "option.txt")
 	else: ok=mensagemok('RatoTV','Ocorreu um erro. Tente novamente.'); sys.exit(0)
 	if opcao == '10': sys.exit(0)
