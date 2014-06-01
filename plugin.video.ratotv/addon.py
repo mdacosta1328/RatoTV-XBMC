@@ -524,12 +524,12 @@ def listar_media(url,mode):
     totalit = len(html_source_trunk)
     print "numero total de items:" + str(totalit)
     for html_trunk in html_source_trunk:
-        infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_trunk)
-        print "fanart",fanart
-        if filme_ou_serie == 'movie':
-            addDir_filme(name + ' ('+infolabels['Year']+')',url,3,iconimage,infolabels,fanart,totalit,False,'movie',HD,favorito)
-        elif filme_ou_serie == 'tvshow':
-            addDir_filme(name + ' ('+infolabels['Year']+')',url,10,iconimage,infolabels,fanart,totalit,True,'tvshow',HD,favorito)
+        try:
+            infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_trunk)
+            #print "fanart",fanart
+            if filme_ou_serie == 'movie': addDir_filme(name + ' ('+infolabels['Year']+')',url,3,iconimage,infolabels,fanart,totalit,False,'movie',HD,favorito)
+            elif filme_ou_serie == 'tvshow': addDir_filme(name + ' ('+infolabels['Year']+')',url,10,iconimage,infolabels,fanart,totalit,True,'tvshow',HD,favorito)
+        except: pass    	
     print "pagina seguinte",pag_seguinte,"pagina actual",current_page,"total",total_paginas
     try:
         print type(total_paginas[0])
