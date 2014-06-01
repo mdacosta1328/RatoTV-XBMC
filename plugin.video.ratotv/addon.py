@@ -397,21 +397,22 @@ class Player(xbmc.Player):
         self.playing = False
         time = int(self.time)
         print 'self.time/self.totalTime='+str(self.time/self.totalTime)
-        if (self.time/self.totalTime > 0.90): adicionar_visto(url,season=season,episode=episode)
-	    try:
-		definition_trakt = readfile(os.path.join(datapath,'trakt.txt'))
-		xbmcaddon.Addon(id='script.trakt').setSetting('rate_movie',definition_trakt)
-	    except: pass
-	    if selfAddon.getSetting('votar-stopped')=='true':
+        if (self.time/self.totalTime > 0.90): 
+		adicionar_visto(url,season=season,episode=episode)
 		try:
-			if season: pass
-			else: votar_ratotv()
-		except: votar_ratotv()
-	else:
-	    try:
-		definition_trakt = readfile(os.path.join(datapath,'trakt.txt'))
-		xbmcaddon.Addon(id='script.trakt').setSetting('rate_movie',definition_trakt)
-	    except: pass
+			definition_trakt = readfile(os.path.join(datapath,'trakt.txt'))
+			xbmcaddon.Addon(id='script.trakt').setSetting('rate_movie',definition_trakt)
+		except: pass
+		if selfAddon.getSetting('votar-stopped')=='true':
+			try:
+				if season: pass
+				else: votar_ratotv()
+			except: votar_ratotv()
+		else:
+			try:
+				definition_trakt = readfile(os.path.join(datapath,'trakt.txt'))
+				xbmcaddon.Addon(id='script.trakt').setSetting('rate_movie',definition_trakt)
+			except: pass
 
     def onPlayBackEnded(self):
         self.onPlayBackStopped()
@@ -2043,8 +2044,8 @@ def transferir_biblioteca_filmes(name):
 			#salva ficheiro na userdata para saber se item ja foi transferido anteriormente
 				if not xbmcvfs.exists(movie_database_file): save(movie_database_file,'check')
 			#salva stream
-					save(strm_filme,strm_contents)
-					i +=1
+				save(strm_filme,strm_contents)
+				i +=1
 
 			current_page +=1
 			if comando == 'todos': progresso.update(int((float(current_page)/int(total_paginas)*100)),'A transferir biblioteca de Filmes...Aguarde...',infolabels['originaltitle'] + ' (' + infolabels['Year'] +')','Página '+str(current_page)+'/'+str(total_paginas))
