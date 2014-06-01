@@ -472,7 +472,8 @@ def listar_media(url,mode):
     totalit = len(html_source_trunk)
     print "numero total de items:" + str(totalit)
     for html_trunk in html_source_trunk:
-        infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_trunk)
+        try: infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_trunk)
+        except: pass        
         print "fanart",fanart
         if filme_ou_serie == 'movie':
             addDir_filme(name + ' ('+infolabels['Year']+')',url,3,iconimage,infolabels,fanart,totalit,False,'movie',HD,favorito)
