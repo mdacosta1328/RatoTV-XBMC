@@ -628,9 +628,13 @@ def rato_tv_get_media_info(html_trunk):
         try:
             data_dict['Plot'] = h.unescape(plot)
         except: data_dict['Plot'] = 'N/A'
-    match = re.compile('<strong>Ano: </strong>(.+?)</li>').findall(html_trunk)
-    for year in match:
-        data_dict['Year'] = year
+    match = re.compile('<strong>Ano: </strong><a href="(.+?)/tags/(.+?)">(.+?)</a></li>').findall(html_trunk)
+    if match:
+	data_dict['Year'] = match[0][2]
+    else:
+    	match = re.compile('<strong>Ano: </strong>(.+?)</li>').findall(html_trunk)
+    	for year in match:
+        	data_dict['Year'] = year
     match = re.compile('<strong>Atores: </strong>(.+?)</li>').findall(html_trunk)
     if match:
         actor = match[0].replace(" ","").split(",")
@@ -1960,6 +1964,34 @@ def handle_wait(time_to_wait,title,text,segunda=''):
 
 ####Subscricoes
 
+def adicionar_filme_biblioteca(name,url,iconimage):
+	current_url = url
+	if selfAddon.getSetting('libraryfolder'): pass
+	else:
+		ok=mensagemok('RatoTV','Não definiu uma pasta para a biblioteca nas definições!','Por favor defina-a e tente novamente.')
+		sys.exit(0)
+	if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'movies')): xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'movies'))
+	id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
+	try: html_source=post_page(current_url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	except: html_source = ''
+	if html_source:
+		print "here"
+		html_source_trunk = re.findall('<div class="shortpost(.*?)Reportar</a></li>', html_source, re.DOTALL)
+		print html_source_trunk
+		if html_source_trunk:
+			print "html trunk e taL"
+			infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_source_trunk[0])
+			movie_folder = os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')')
+			if not xbmcvfs.exists(movie_folder): xbmcvfs.mkdir(movie_folder)
+			strm_contents = 'plugin://plugin.video.ratotv/?url=' + url +'&mode=44&name=' + urllib.quote_plus(infolabels['originaltitle'])
+			movie_database_file = os.path.join(movie_folder,id_ratotv+'.txt')
+			save(movie_database_file,strm_contents)
+			xbmc.executebuiltin("XBMC.Notification(RatoTv,Filme adicionado à biblioteca!,'10000',"+addonfolder+"/icon.png)")
+			xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
+
+
+
+
 def procurar_novas_series():
 	cancelar = False
 	pasta_series_subscritas = os.path.join(datapath,'tvshows-subscriptions')
@@ -2395,6 +2427,7 @@ def addDir_filme(name,url,mode,iconimage,infolabels,fanart,totalit,pasta,tipo,HD
                     if filme_visto["title"] == infolabels['originaltitle'] and str(filme_visto["year"]) == infolabels["Year"]:
                         visto =True
         except: pass
+	contextmen.append(('Adicionar à biblioteca', 'XBMC.RunPlugin(%s?mode=49&url=%s&name=%s&iconimage=%s)' % (sys.argv[0], url, name, iconimage)))
     else:
             visto = None
 	    if os.path.exists(filename): contextmen.append(('Deixar de seguir série', 'XBMC.RunPlugin(%s?mode=27&url=%s&name=%s&iconimage=%s)' % (sys.argv[0], url, name, iconimage)))
@@ -2756,4 +2789,6 @@ elif mode==45: listar_series_subscritas()
 elif mode==46: remover_subscricao_serie(name,url,iconimage)
 elif mode==47: transferir_biblioteca_filmes('novos')
 elif mode==48: procurar_novas_series()
+elif mode==49: adicionar_filme_biblioteca(name,url,iconimage)
+
 if mode != 9: xbmcplugin.endOfDirectory(int(sys.argv[1]))
