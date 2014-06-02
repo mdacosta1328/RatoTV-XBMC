@@ -1975,11 +1975,8 @@ def adicionar_filme_biblioteca(name,url,iconimage):
 	try: html_source=post_page(current_url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: html_source = ''
 	if html_source:
-		print "here"
 		html_source_trunk = re.findall('<div class="shortpost(.*?)Reportar</a></li>', html_source, re.DOTALL)
-		print html_source_trunk
 		if html_source_trunk:
-			print "html trunk e taL"
 			infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_source_trunk[0])
 			movie_folder = os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')')
 			if not xbmcvfs.exists(movie_folder): xbmcvfs.mkdir(movie_folder)
