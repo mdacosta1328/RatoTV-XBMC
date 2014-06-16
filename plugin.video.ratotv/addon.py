@@ -39,18 +39,6 @@ tmdb_base_url = 'http://d3gtl9l2a4fn1j.cloudfront.net/t/p/w1280'
 fanart_rato_tv = addonfolder + '/fanart.jpg'
 
 ######################################################################################################
-#                                        GOOGLE ANALYTICS CONFIGURATION                              #
-######################################################################################################
-
-if selfAddon.getSetting('ga_visitor')=='':
-    from random import randint
-    selfAddon.setSetting('ga_visitor',str(randint(0, 0x7fffffff)))
-
-PATH = "ratotv"  #<---- PLUGIN NAME MINUS THE "plugin.video"
-UATRACK="UA-41937813-3" #<---- GOOGLE ANALYTICS UA NUMBER
-VERSION = "1.1.0" #<---- PLUGIN VERSION
-
-######################################################################################################
 #                                               MENUS                                                #
 ######################################################################################################
 
@@ -73,7 +61,6 @@ def Menu_principal():
 	mensagens_conta()
         menu_view()
 	if selfAddon.getSetting('novos-episodios') == "true": verificar_novos()
-        GA("None","Menu inicial")
     else:
         addDir_reg_menu('Alterar Definições','url',9,artfolder+'definicoes.jpg',False)
         addDir_reg_menu('Tentar Novamente','url',None,artfolder+'refresh.jpg',True)
@@ -88,7 +75,6 @@ def Menu_principal_series():
     addDir_reg_menu('Séries mais vistas',base_url,6,artfolder+'series-mais.jpg',True)
     addDir_reg_menu('Séries mais votadas',base_url,6,artfolder+'series-mais.jpg',True)
     menu_view()
-    GA("None","Series")
 
 def Menu_principal_filmes():
     addDir_reg_menu('Todos os filmes',base_url + 'movies/page/1/',2,artfolder+'filmes.jpg',True)
@@ -97,7 +83,6 @@ def Menu_principal_filmes():
     addDir_reg_menu('Filmes mais vistos',base_url,6,artfolder+'filmes-mais.jpg',True)
     addDir_reg_menu('Filmes mais votados',base_url,6,artfolder+'filmes-mais.jpg',True)
     menu_view()
-    GA("None","Filmes")
 
 def Menu_categorias_filmes():
     addDir_reg_menu('Acção',base_url + 'tags/Ação/page/1/',2,artfolder+'filmes.jpg',True)
@@ -352,7 +337,6 @@ def player_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 		match = re.compile('\((.+?)\)').findall(infolabels['TVShowTitle'])
 		if match: infolabels['TVShowTitle']=infolabels['TVShowTitle'].replace(match[0],'').replace('(','').replace(')','')
 	print video,subs,name,iconimage,infolabels
-	GA("None",name)
 	playlist = xbmc.PlayList(1)
 	playlist.clear()
 	if originaltitle: name = originaltitle
@@ -455,42 +439,34 @@ def filmes_homepage(name,url):
     try: html_source = abrir_url(url)
     except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente ou contacte um dos administradores do site.');html_source = ''
     if name == 'Filmes mais vistos':
-        GA("None","Filmes mais vistos")
         pasta = False
         mode = 3
         html_source_trunk = re.findall('<div id="viewed">(.*?)<div id="rated">', html_source, re.DOTALL)
     elif name == 'Filmes mais populares':
-        GA("None","Filmes mais populares")
         pasta = False
         mode = 3
         html_source_trunk = re.findall('<div id="popular">(.*?)<div id="viewed">', html_source, re.DOTALL)
     elif name == 'Filmes mais recentes':
-        GA("None","Filmes mais recentes")
         pasta = False
         mode = 3
         html_source_trunk = re.findall('<div id="new"(.*?)<div id="popular">', html_source, re.DOTALL)
     elif name == 'Filmes mais votados':
-        GA("None","Filmes mais votados")
         pasta = False
         mode = 3
         html_source_trunk = re.findall('<div id="rated">(.*?)</div></div>', html_source, re.DOTALL)
     elif name == 'Séries mais vistas':
-        GA("None","Séries mais vistas")
         pasta = True
         mode = 10
         html_source_trunk = re.findall('<div id="viewed2">(.*?)<div id="rated2">', html_source, re.DOTALL)
     elif name == 'Séries mais populares':
-        GA("None","Séries mais populares")
         pasta = True
         mode = 10
         html_source_trunk = re.findall('<div id="popular2">(.*?)<div id="viewed2">', html_source, re.DOTALL)
     elif name == 'Séries mais recentes':
-        GA("None","Séries mais recentes")
         pasta = True
         mode = 10
         html_source_trunk = re.findall('<div id="new2">(.*?)<div id="popular2">', html_source, re.DOTALL)
     elif name == 'Séries mais votadas':
-        GA("None","Séries mais votadas")
         pasta = True
         mode = 10
         html_source_trunk = re.findall('<div id="rated2">(.*?)</div></div>', html_source, re.DOTALL)
@@ -778,13 +754,6 @@ def download_qualidade(url,name,iconimage):
 			downloader_rato(decoded_url,subs,name,url,iconimage,'',None,None)
 	elif tipo == "tvshow": pass
 
-#def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
-	#videos = "rtmp://95.211.209.210:1935/vod?h=rki7hbapyxuzcg3h5eacffvkybonuxzrgxil262y7qpygdrkg5hsfziimehq/16/6355539226_n.flv?h=rki7hbapyxuzcg3h5eacffvkybonuxzrgxil262y7qpygdrkg5hsfziimehq"
-	#import SimpleDownloader as downloader
- 	#downloader = downloader.SimpleDownloader()
-	#params = {"url": videos, "download_path": "/home/miguel/Documentos/eultra", "Title": "Coiso"}
- 	#downloader.download("bun.mp4", params)
-
 def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 	print subs,video
 	progresso.create('Downloader RatoTV', name ,'A obter resposta do servidor...Aguarde.')
@@ -873,12 +842,10 @@ def check_login():
             else:
                     resultado = True
                     xbmc.executebuiltin("XBMC.Notification(RatoTv," + selfAddon.getSetting('login_name') + " -Sessão iniciada!,'10000',"+addonfolder+"/icon.png)")
-                    #if selfAddon.getSetting('mensagem-site') == "true": mensagem_site(post_page(base_url + 'templates/ratotv/js/word.js' ,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password')))
                     return resultado
         else:
             resultado = True
             xbmc.executebuiltin("XBMC.Notification(RatoTv," + selfAddon.getSetting('login_name') + " -Sessão iniciada!,'10000',"+addonfolder+"/icon.png)")
-            #if selfAddon.getSetting('mensagem-site') == "true": mensagem_site(post_page(base_url + 'templates/ratotv/js/word.js' ,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password')))
             return resultado
 
 def menu_view():
@@ -1177,11 +1144,8 @@ def estatisticas_trakt(url):
 				if len(data) > 0:
 					texto += str(len(data)) +' utilizadores a ver neste momento\n\n'
 				else: texto += 'Ninguém a assistir neste momento \n\n'
-			#print data
 			except: pass
-			print url_api_trakt
 			data = json_get(url_api_trakt)
-			print data
 			try: texto += 'Já viram: ' + str(data['stats']['watchers']) + ' pessoas\n\n'
 			except: pass
 			try: texto += 'Visto: ' + str(data['stats']['plays']) + ' vezes\n\n'
@@ -2511,151 +2475,6 @@ def addDir_episodio(nomeSerie,title,description,url,temporada,episodio,sources,s
     liz.addContextMenuItems(contextmen, replaceItems=True)
     ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=False,totalItems=1)
     return ok
-
-############################### GOOGLE ANALYTICS XBMC by mickey ->http://www.xbmchub.com/forums/general-python-development/4747-%5Bdev-release%5D-final-google-analytics-your-plugin.html
-
-def parseDate(dateString):
-    try: return datetime.datetime.fromtimestamp(time.mktime(time.strptime(dateString.encode('utf-8', 'replace'), "%Y-%m-%d %H:%M:%S")))
-    except: return datetime.datetime.today() - datetime.timedelta(days = 1) #force update
-
-def checkGA():
-
-    secsInHour = 60 * 60
-    threshold  = 2 * secsInHour
-
-    now   = datetime.datetime.today()
-    prev  = parseDate(ADDON.getSetting('ga_time'))
-    delta = now - prev
-    nDays = delta.days
-    nSecs = delta.seconds
-
-    doUpdate = (nDays > 0) or (nSecs > threshold)
-    if not doUpdate: return
-
-    ADDON.setSetting('ga_time', str(now).split('.')[0])
-    APP_LAUNCH()
-
-def send_request_to_google_analytics(utm_url):
-    ua='Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'
-    import urllib2
-    try:
-        req = urllib2.Request(utm_url, None,
-                                    {'User-Agent':ua}
-                                     )
-        response = urllib2.urlopen(req).read()
-    except: print ("GA fail: %s" % utm_url)
-    return response
-
-def GA(group,name):
-    try:
-        try: from hashlib import md5
-        except: from md5 import md5
-        from random import randint
-        import time
-        from urllib import unquote, quote
-        from os import environ
-        from hashlib import sha1
-        VISITOR = ADDON.getSetting('ga_visitor')
-        utm_gif_location = "http://www.google-analytics.com/__utm.gif"
-        if not group=="None":
-            utm_track = utm_gif_location + "?" + \
-                "utmwv=" + VERSION + \
-                "&utmn=" + str(randint(0, 0x7fffffff)) + \
-                "&utmt=" + "event" + \
-                "&utme="+ quote("5("+PATH+"*"+group+"*"+name+")")+\
-                "&utmp=" + quote(PATH) + \
-                "&utmac=" + UATRACK + \
-                "&utmcc=__utma=%s" % ".".join(["1", VISITOR, VISITOR, VISITOR,VISITOR,"2"])
-            try:
-                print "============================ POSTING TRACK EVENT ============================"
-                send_request_to_google_analytics(utm_track)
-            except:
-                print "============================  CANNOT POST TRACK EVENT ============================"
-        if name=="None":
-            utm_url = utm_gif_location + "?" + \
-                "utmwv=" + VERSION + \
-                "&utmn=" + str(randint(0, 0x7fffffff)) + \
-                "&utmp=" + quote(PATH) + \
-                "&utmac=" + UATRACK + \
-                "&utmcc=__utma=%s" % ".".join(["1", VISITOR, VISITOR, VISITOR, VISITOR,"2"])
-        else:
-            if group=="None":
-               utm_url = utm_gif_location + "?" + \
-                    "utmwv=" + VERSION + \
-                    "&utmn=" + str(randint(0, 0x7fffffff)) + \
-                    "&utmp=" + quote(PATH+"/"+name) + \
-                    "&utmac=" + UATRACK + \
-                    "&utmcc=__utma=%s" % ".".join(["1", VISITOR, VISITOR, VISITOR, VISITOR,"2"])
-            else:
-               utm_url = utm_gif_location + "?" + \
-                    "utmwv=" + VERSION + \
-                    "&utmn=" + str(randint(0, 0x7fffffff)) + \
-                    "&utmp=" + quote(PATH+"/"+group+"/"+name) + \
-                    "&utmac=" + UATRACK + \
-                    "&utmcc=__utma=%s" % ".".join(["1", VISITOR, VISITOR, VISITOR, VISITOR,"2"])
-
-        print "============================ POSTING ANALYTICS ============================"
-        send_request_to_google_analytics(utm_url)
-
-    except: print "================  CANNOT POST TO ANALYTICS  ================"
-
-def APP_LAUNCH():
-    versionNumber = int(xbmc.getInfoLabel("System.BuildVersion" )[0:2])
-    if versionNumber < 12:
-        if xbmc.getCondVisibility('system.platform.osx'):
-            if xbmc.getCondVisibility('system.platform.atv2'): log_path = '/var/mobile/Library/Preferences'
-            else: log_path = os.path.join(os.path.expanduser('~'), 'Library/Logs')
-        elif xbmc.getCondVisibility('system.platform.ios'): log_path = '/var/mobile/Library/Preferences'
-        elif xbmc.getCondVisibility('system.platform.windows'):
-            log_path = xbmc.translatePath('special://home')
-            log = os.path.join(log_path, 'xbmc.log')
-            logfile = open(log, 'r').read()
-        elif xbmc.getCondVisibility('system.platform.linux'): log_path = xbmc.translatePath('special://home/temp')
-        else: log_path = xbmc.translatePath('special://logpath')
-        log = os.path.join(log_path, 'xbmc.log')
-        logfile = open(log, 'r').read()
-        match=re.compile('Starting XBMC \((.+?) Git:.+?Platform: (.+?)\. Built.+?').findall(logfile)
-    elif versionNumber > 11:
-        print '======================= more than ===================='
-        log_path = xbmc.translatePath('special://logpath')
-        log = os.path.join(log_path, 'xbmc.log')
-        logfile = open(log, 'r').read()
-        match=re.compile('Starting XBMC \((.+?) Git:.+?Platform: (.+?)\. Built.+?').findall(logfile)
-    else:
-        logfile='Starting XBMC (Unknown Git:.+?Platform: Unknown. Built.+?'
-        match=re.compile('Starting XBMC \((.+?) Git:.+?Platform: (.+?)\. Built.+?').findall(logfile)
-    print '==========================   '+PATH+' '+VERSION+'  =========================='
-    try: from hashlib import md5
-    except: from md5 import md5
-    from random import randint
-    import time
-    from urllib import unquote, quote
-    from os import environ
-    from hashlib import sha1
-    import platform
-    VISITOR = ADDON.getSetting('ga_visitor')
-    for build, PLATFORM in match:
-        if re.search('12',build[0:2],re.IGNORECASE): build="Frodo"
-        if re.search('11',build[0:2],re.IGNORECASE): build="Eden"
-        if re.search('13',build[0:2],re.IGNORECASE): build="Gotham"
-        if re.search('14',build[0:2],re.IGNORECASE): build="Helix"        
-        print build
-        print PLATFORM
-        utm_gif_location = "http://www.google-analytics.com/__utm.gif"
-        utm_track = utm_gif_location + "?" + \
-            "utmwv=" + VERSION + \
-            "&utmn=" + str(randint(0, 0x7fffffff)) + \
-            "&utmt=" + "event" + \
-            "&utme="+ quote("5(APP LAUNCH*"+build+"*"+PLATFORM+")")+\
-            "&utmp=" + quote(PATH) + \
-            "&utmac=" + UATRACK + \
-            "&utmcc=__utma=%s" % ".".join(["1", VISITOR, VISITOR, VISITOR,VISITOR,"2"])
-        try:
-            print "============================ POSTING APP LAUNCH TRACK EVENT ============================"
-            send_request_to_google_analytics(utm_track)
-        except: print "============================  CANNOT POST APP LAUNCH TRACK EVENT ============================"
-
-checkGA()
 
 ############################################################################################################
 #NAVEGAÇÃO												   #
