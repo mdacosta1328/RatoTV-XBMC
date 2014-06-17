@@ -37,34 +37,35 @@ mensagemok = xbmcgui.Dialog().ok
 progresso = xbmcgui.DialogProgress()
 tmdb_base_url = 'http://d3gtl9l2a4fn1j.cloudfront.net/t/p/w1280'
 fanart_rato_tv = addonfolder + '/fanart.jpg'
+setting_limpar_metadata = "limpar-metadata"
 
 ######################################################################################################
 #                                               MENUS                                                #
 ######################################################################################################
 
 def Menu_principal():
-    login_sucessful = check_login()
-    if login_sucessful == True:
-	addDir_reg_menu('Menu Teste','url',47,artfolder+'filmes.jpg',False)
-        addDir_reg_menu('Filmes','url',1,artfolder+'filmes.jpg',True)
-        addDir_reg_menu('Séries',base_url,8,artfolder+'series.jpg',True)
-        addDir_reg_menu('Pedidos',"http://www.ratotv.net/requests/page/1/",33,artfolder+'contactar.jpg',True)
-        addDir_reg_menu('Pesquisar','url',4,artfolder+'pesquisa.jpg',True)
-        addDir_reg_menu('','','',addonfolder+'logo.png',False)
-        addDir_reg_menu('Favoritos','http://www.ratotv.net/favorites/page/1/',15,artfolder+'favoritos.jpg',True)
-	addDir_reg_menu('Séries subscritas',base_url + 'index.php?cstart=1&do=cat&category=tvshows',45,artfolder+'series.jpg',True)
-	addDir_reg_menu('Séries a seguir',base_url + 'index.php?cstart=1&do=cat&category=tvshows',26,artfolder+'series.jpg',True)
-        addDir_reg_menu('Géneros','url',5,artfolder+'categorias.jpg',True)
-        addDir_reg_menu('Ano','url',42,artfolder+'pesquisa.jpg',True)
-        addDir_reg_menu('Definições','url',9,artfolder+'definicoes.jpg',True)
-        addDir_reg_menu('','','',addonfolder+'logo.png',False)
-	mensagens_conta()
-        menu_view()
+	login_sucessful = check_login()
+	if login_sucessful == True:
+		addDir_reg_menu('Filmes','url',1,artfolder+'filmes.jpg',True)
+		addDir_reg_menu('Séries',base_url,8,artfolder+'series.jpg',True)
+		addDir_reg_menu('Pedidos',"http://www.ratotv.net/requests/page/1/",33,artfolder+'contactar.jpg',True)
+		addDir_reg_menu('Pesquisar','url',4,artfolder+'pesquisa.jpg',True)
+		addDir_reg_menu('','','',addonfolder+'logo.png',False)
+		addDir_reg_menu('Favoritos','http://www.ratotv.net/favorites/page/1/',15,artfolder+'favoritos.jpg',True)
+		addDir_reg_menu('Séries subscritas',base_url + 'index.php?cstart=1&do=cat&category=tvshows',45,artfolder+'series.jpg',True)
+		addDir_reg_menu('Séries a seguir',base_url + 'index.php?cstart=1&do=cat&category=tvshows',26,artfolder+'series.jpg',True)
+		addDir_reg_menu('Géneros','url',5,artfolder+'categorias.jpg',True)
+		addDir_reg_menu('Ano','url',42,artfolder+'pesquisa.jpg',True)
+		addDir_reg_menu('Definições','url',9,artfolder+'definicoes.jpg',True)
+		addDir_reg_menu('','','',addonfolder+'logo.png',False)
+		mensagens_conta()
+		#if selfAddon.getSetting(setting_limpar_metadata) == "true": limpar_pasta_metadata()
+		menu_view()
 	if selfAddon.getSetting('novos-episodios') == "true": verificar_novos()
-    else:
-        addDir_reg_menu('Alterar Definições','url',9,artfolder+'definicoes.jpg',False)
-        addDir_reg_menu('Tentar Novamente','url',None,artfolder+'refresh.jpg',True)
-        menu_view()
+	else:
+		addDir_reg_menu('Alterar Definições','url',9,artfolder+'definicoes.jpg',False)
+		addDir_reg_menu('Tentar Novamente','url',None,artfolder+'refresh.jpg',True)
+		menu_view()
 
 def Menu_principal_series():
     addDir_reg_menu('Todas as séries',base_url + 'index.php?cstart=1&do=cat&category=tvshows',2,artfolder+'series.jpg',True)
@@ -512,6 +513,16 @@ def obter_info_url(url,salvar=False):
 			txt_file = os.path.join(userdata_folder,id_rato[0] + '.txt')
 			save(txt_file, name + '|' + url + '|'+str(infolabels)+'|' + iconimage + '|'  + urllib.quote(fanart) + '|' + filme_ou_serie +'|'+str(HD)+'|' + str(favorito))
 		return infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito
+		
+#funcao para limpar metadata
+def limpar_pasta_metadata():
+	userdata_folder = os.path.join(datapath,"media_database")
+	if xbmcvfs.exists(userdata_folder):
+		dirs, files = xbmcvfs.listdir(folder)
+		for ficheiro in files:
+			xbmcvfs.delete(os.path.join(userdata_folder,ficheiro))
+		selfAddon.setSetting(setting_limpar_metadata,"false")
+	return
 
 def listar_media(url,mode):
     try:
@@ -899,20 +910,6 @@ def moviesandseries_view():
 def pedidos_view():
     xbmcplugin.setContent(int(sys.argv[1]), 'Movies')
     setting = selfAddon.getSetting('pedidos-view')
-    if setting == "0": xbmc.executebuiltin("Container.SetViewMode(50)")
-    elif setting == "1": xbmc.executebuiltin("Container.SetViewMode(51)")
-    elif setting == "2": xbmc.executebuiltin("Container.SetViewMode(500)")
-    elif setting == "3": xbmc.executebuiltin("Container.SetViewMode(501)")
-    elif setting == "4": xbmc.executebuiltin("Container.SetViewMode(508)")
-    elif setting == "5": xbmc.executebuiltin("Container.SetViewMode(504)")
-    elif setting == "6": xbmc.executebuiltin("Container.SetViewMode(503)")
-    elif setting == "7": xbmc.executebuiltin("Container.SetViewMode(515)")
-    xbmcplugin.setContent(int(sys.argv[1]), 'Movies')
-    return
-
-def homepage_view():
-    xbmcplugin.setContent(int(sys.argv[1]), 'Movies')
-    setting = selfAddon.getSetting('homepage-view')
     if setting == "0": xbmc.executebuiltin("Container.SetViewMode(50)")
     elif setting == "1": xbmc.executebuiltin("Container.SetViewMode(51)")
     elif setting == "2": xbmc.executebuiltin("Container.SetViewMode(500)")
