@@ -787,7 +787,8 @@ def download_qualidade(url,name,iconimage):
         			if len(subs) >= 1: subs = base_url + str(subs[0])
         			else: subs = ''
     			except: subs = ''
-			downloader_rato(decoded_url,subs,name,url,iconimage,'',None,None)
+    			infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = obter_info_url(url)
+			downloader_rato(decoded_url,subs,infolabels["originaltitle"] + ' ('+infolabels["Year"] +')',url,iconimage,'',None,None)
 	elif tipo == "tvshow":
 		srt=urllib.unquote_plus(params["srt"])
 		source=eval(sources)
@@ -811,7 +812,7 @@ def download_qualidade(url,name,iconimage):
 				source[int(opcao)-1] = decoded_url
 			if "../" in srt[int(opcao)-1]: srt[int(opcao)-1] = srt[int(opcao)-1].replace("../",base_url)
 			infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = obter_info_url(url)
-			downloader_rato(decoded_url,srt[int(opcao)-1],name,url,iconimage,'',season,episode)
+			downloader_rato(decoded_url,srt[int(opcao)-1],infolabels["originaltitle"],url,iconimage,'',season,episode)
 			
 
 def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
@@ -830,10 +831,10 @@ def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 			folder_name_serie = ADDON.getSetting('folder') + 'series/' + name.replace(':','')
 			if os.path.exists(folder_name_serie): pass
 			else: os.mkdir( folder_name_serie , 0777 );
-			folder_name_serie_temporada = folder_name_serie + "/Season" + str(season)
+			folder_name_serie_temporada = folder_name_serie + "/Season " + str(season)
 			if os.path.exists(folder_name_serie_temporada): pass
 			else: os.mkdir( folder_name_serie_temporada , 0777 );
-			folder_name = folder_name_serie_temporada + '/' + name.replace(':','') + "-Season" + str(season) + "Episode" + str(episode)
+			folder_name = folder_name_serie_temporada + '/' + name.replace(':','') + " S" + str(season) + "E" + str(episode)
 			if os.path.exists(folder_name): pass
 			else: os.mkdir( folder_name , 0777 );
 		else:
