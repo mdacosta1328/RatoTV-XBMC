@@ -436,54 +436,82 @@ def pesquisa_ano(url):
 	else: sys.exit(0)
 
 def filmes_homepage(name,url):
-    try: html_source = abrir_url(url)
-    except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente ou contacte um dos administradores do site.');html_source = ''
-    if name == 'Filmes mais vistos':
-        pasta = False
-        mode = 3
-        html_source_trunk = re.findall('<div id="viewed">(.*?)<div id="rated">', html_source, re.DOTALL)
-    elif name == 'Filmes mais populares':
-        pasta = False
-        mode = 3
-        html_source_trunk = re.findall('<div id="popular">(.*?)<div id="viewed">', html_source, re.DOTALL)
-    elif name == 'Filmes mais recentes':
-        pasta = False
-        mode = 3
-        html_source_trunk = re.findall('<div id="new"(.*?)<div id="popular">', html_source, re.DOTALL)
-    elif name == 'Filmes mais votados':
-        pasta = False
-        mode = 3
-        html_source_trunk = re.findall('<div id="rated">(.*?)</div></div>', html_source, re.DOTALL)
-    elif name == 'Séries mais vistas':
-        pasta = True
-        mode = 10
-        html_source_trunk = re.findall('<div id="viewed2">(.*?)<div id="rated2">', html_source, re.DOTALL)
-    elif name == 'Séries mais populares':
-        pasta = True
-        mode = 10
-        html_source_trunk = re.findall('<div id="popular2">(.*?)<div id="viewed2">', html_source, re.DOTALL)
-    elif name == 'Séries mais recentes':
-        pasta = True
-        mode = 10
-        html_source_trunk = re.findall('<div id="new2">(.*?)<div id="popular2">', html_source, re.DOTALL)
-    elif name == 'Séries mais votadas':
-        pasta = True
-        mode = 10
-        html_source_trunk = re.findall('<div id="rated2">(.*?)</div></div>', html_source, re.DOTALL)
-    if html_source:
-        match = re.compile('<img src="(.+?)" alt=".+?"/><span>(.+?)</span><a href="(.+?)"').findall(html_source_trunk[0])
-        totalit = len(match)
-        print "totalit",totalit
-        for img,titulo,url in match:
-            #if seq.find('<a href="http://www.ratotv.net/xfsearch/HD/">HD</a>') != -1: HD = True
-            #else: HD = False
-            HD = "" # RETIRA A INFORMACAO DO HD
-            infolabels = {"Title": titulo, "Originaltitle": titulo}
-            if img.find('http://') == -1: img = base_url + img
-            else: pass
-            addDir_filme(titulo,url,mode,img,infolabels,fanart_rato_tv,totalit,pasta,'movie',HD,None)
-    else:pass
-    homepage_view()
+	try: html_source = abrir_url(url)
+	except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente ou contacte um dos administradores do site.');sys.exit(0)
+	if name == 'Filmes mais vistos':
+		pasta = False
+		mode = 3
+		html_source_trunk = re.findall('<div id="viewed">(.*?)<div id="rated">', html_source, re.DOTALL)
+	elif name == 'Filmes mais populares':
+		pasta = False
+		mode = 3
+		html_source_trunk = re.findall('<div id="popular">(.*?)<div id="viewed">', html_source, re.DOTALL)
+	elif name == 'Filmes mais recentes':
+		pasta = False
+		mode = 3
+		html_source_trunk = re.findall('<div id="new"(.*?)<div id="popular">', html_source, re.DOTALL)
+	elif name == 'Filmes mais votados':
+		pasta = False
+		mode = 3
+		html_source_trunk = re.findall('<div id="rated">(.*?)</div></div>', html_source, re.DOTALL)
+	elif name == 'Séries mais vistas':
+		pasta = True
+		mode = 10
+		html_source_trunk = re.findall('<div id="viewed2">(.*?)<div id="rated2">', html_source, re.DOTALL)
+	elif name == 'Séries mais populares':
+		pasta = True
+		mode = 10
+		html_source_trunk = re.findall('<div id="popular2">(.*?)<div id="viewed2">', html_source, re.DOTALL)
+	elif name == 'Séries mais recentes':
+		pasta = True
+		mode = 10
+		html_source_trunk = re.findall('<div id="new2">(.*?)<div id="popular2">', html_source, re.DOTALL)
+	elif name == 'Séries mais votadas':
+		pasta = True
+		mode = 10
+		html_source_trunk = re.findall('<div id="rated2">(.*?)</div></div>', html_source, re.DOTALL)
+	if html_source:
+		match = re.compile('<img src="(.+?)" alt=".+?"/><span>(.+?)</span><a href="(.+?)"').findall(html_source_trunk[0])
+		totalit = len(match)
+		progresso.create('RatoTV', 'A obter metadata... ')
+		progresso.update(0,'A obter metadata...')
+		i=0
+		for img,titulo,url in match:
+			progresso.update(int(i/float(totalit)*100),'A obter metadata...',titulo)
+			id_rato = re.compile('.*/(.+?)-.+?html').findall(url)
+			userdata_folder = os.path.join(datapath,"media_database")
+			txt_file = os.path.join(userdata_folder,id_rato[0] + '.txt')
+			if xbmcvfs.exists(txt_file):
+				data = readfile(txt_file).split('|')
+				name = data[0]
+				url = data[1]
+				iconimage = data[3]
+				infolabels = eval(data[2])
+				fanart = urllib.unquote(data[4])
+				filme_ou_serie = data[5]
+				HD = eval(data[6])
+				favorito = eval(data[7])			
+			else:
+				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = obter_info_url(url,True)
+			i += 1
+			addDir_filme(name,url,mode,iconimage,infolabels,fanart,totalit,pasta,filme_ou_serie,HD,favorito)
+		progresso.close()
+	moviesandseries_view()
+	
+#Funcao para devolver informaçao de um filme/serie dado o url
+def obter_info_url(url,salvar=False):
+	codigo_fonte = post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	html_source_trunk = re.findall('<div class="shortpost(.*?)Reportar</a></li>', codigo_fonte, re.DOTALL)
+	if html_source_trunk:
+		infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_source_trunk[0])
+		if salvar:
+			id_rato = re.compile('.*/(.+?)-.+?html').findall(url)
+			userdata_folder = os.path.join(datapath,"media_database")
+			if not xbmcvfs.exists(userdata_folder):
+				xbmcvfs.mkdir(userdata_folder)
+			txt_file = os.path.join(userdata_folder,id_rato[0] + '.txt')
+			save(txt_file, name + '|' + url + '|'+str(infolabels)+'|' + iconimage + '|'  + urllib.quote(fanart) + '|' + filme_ou_serie +'|'+str(HD)+'|' + str(favorito))
+		return infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito
 
 def listar_media(url,mode):
     try:
@@ -580,7 +608,7 @@ def rato_tv_get_media_info(html_trunk):
     match = re.compile('<strong>IMDB: </strong><a href="http://www.imdb.com/title/(.+?)/"').findall(html_trunk)
     if match != []:data_dict['code'] = match[0]
     else: data_dict['code'] = ''
-    match = re.compile('<strong>Diretor:</strong>(.+?)</li>').findall(html_trunk)
+    match = re.compile('<strong>Diretor:</strong>.+?>(.+?)</a>').findall(html_trunk)
     for director in match:
         data_dict['Director'] = director
     match = re.compile('rating=(.+?)&votes').findall(html_trunk)
@@ -1976,6 +2004,7 @@ def procurar_novas_series():
 			
 
 def transferir_biblioteca_filmes(name):
+
 	#verifica se a pasta para o download da biblioteca está definida
 
 	if selfAddon.getSetting('libraryfolder'): pass
@@ -2034,9 +2063,12 @@ def transferir_biblioteca_filmes(name):
 					if xbmcvfs.exists(movie_database_file):
 						current_page = int(total_paginas)
 						break
+						
 			#salva ficheiro na userdata para saber se item ja foi transferido anteriormente
+			
 				if not xbmcvfs.exists(movie_database_file): save(movie_database_file,'check')
 			#salva stream
+			
 				save(strm_filme,strm_contents)
 				i +=1
 
