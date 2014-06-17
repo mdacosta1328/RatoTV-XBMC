@@ -1965,10 +1965,14 @@ def adicionar_filme_biblioteca(name,url,iconimage):
 		if html_source_trunk:
 			infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_source_trunk[0])
 			movie_folder = os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')')
+			userdata_folder = os.path.join(datapath,'movie-subscriptions')
+			if not xbmcvfs.exists(userdata_folder): xbmcvfs.mkdir(userdata_folder)
 			if not xbmcvfs.exists(movie_folder): xbmcvfs.mkdir(movie_folder)
 			strm_contents = 'plugin://plugin.video.ratotv/?url=' + url +'&mode=44&name=' + urllib.quote_plus(infolabels['originaltitle'])
-			movie_database_file = os.path.join(movie_folder,id_ratotv+'.txt')
-			save(movie_database_file,strm_contents)
+			movie_database_file = os.path.join(userdata_folder,id_ratotv+'.txt')
+			movie_biblioteca_file = os.path.join(movie_folder,urllib.quote_plus(infolabels['originaltitle'])+'.strm')
+			save(movie_biblioteca_file,strm_contents)
+			save(movie_database_file,"check")
 			xbmc.executebuiltin("XBMC.Notification(RatoTv,Filme adicionado à biblioteca!,'10000',"+addonfolder+"/icon.png)")
 			xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
 
