@@ -769,7 +769,6 @@ def download_qualidade(url,name,iconimage):
 	        		if len(subs) >= 1: subs = base_url + str(subs[0])
 	        		else: subs = ''
 	    		except: subs = ''
-	   		print titles,url_movie_file,subs
 	    		if selfAddon.getSetting('qualidade-auto') == "false":
 	        		choose=escolher_qualidade('Seleccione a qualidade',titles)
 	       			if choose > -1: linkescolha=downloader_rato(url_movie_file[choose],subs,name,url,iconimage,'',None,None)
@@ -779,7 +778,6 @@ def download_qualidade(url,name,iconimage):
 				rss_escolhido = int(opcao)-1;print rss_escolhido
 				rss_source = abrir_url(urllib.quote(rssopcao[rss_escolhido], safe=":/"))
 			except: ok=mensagemok('RatoTV','Não foi possível abrir o feed da opção 1')
-			print rss_source
 			if rss_source: hash_movie = re.compile('<location>ratotv*(.+?)</location>').findall(rss_source)[0].replace("*","")
 			else: ok=mensagemok('RatoTV','Não conseguiu obter a hash.')
 			try: decoded_url = resolver_externos(hash_movie)
@@ -789,17 +787,38 @@ def download_qualidade(url,name,iconimage):
         			if len(subs) >= 1: subs = base_url + str(subs[0])
         			else: subs = ''
     			except: subs = ''
-			print subs
 			downloader_rato(decoded_url,subs,name,url,iconimage,'',None,None)
-	elif tipo == "tvshow": pass
+	elif tipo == "tvshow":
+		srt=urllib.unquote_plus(params["srt"])
+		source=eval(sources)
+		srt=eval(srt)
+		num_opcoes = len(source)
+		if num_opcoes == 1: opcao = "1"
+		elif num_opcoes == 2:
+			janela2qualidades()
+			opcao = readfile(datapath + "option.txt")
+		elif num_opcoes == 3:
+			janela3qualidades()
+			opcao = readfile(datapath + "option.txt")
+		else: ok=mensagemok('RatoTV','Ocorreu um erro. Tente novamente.'); sys.exit(0)
+		if opcao == '10': sys.exit(0)
+		else:
+			if "http" in source[int(opcao)-1]:
+				decoded_url = source[int(opcao)-1]
+				source[int(opcao)-1] = decoded_url
+			else:
+				decoded_url = resolver_externos(source[int(opcao)-1])
+				source[int(opcao)-1] = decoded_url
+			if "../" in srt[int(opcao)-1]: srt[int(opcao)-1] = srt[int(opcao)-1].replace("../",base_url)
+			infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = obter_info_url(url)
+			downloader_rato(decoded_url,srt[int(opcao)-1],name,url,iconimage,'',season,episode)
+			
 
 def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 	print subs,video
 	progresso.create('Downloader RatoTV', name ,'A obter resposta do servidor...Aguarde.')
 	file_name = video.split('/')[-1]
-	print "estou aqui"
 	if "ratotv" in video:
-		print "server do rato"
 		request = urllib2.Request(video, headers={"Host" : "ratotv.com","Referer":url})
 	else: request = urllib2.Request(video)
 	try:
@@ -847,11 +866,9 @@ def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 			elif progresso.iscanceled() == 1:
 				f.close()
 				progresso.close()
-				print "Downloader dialog fechada"
 				break
 		f.close()
 		progresso.close()
-		print "Parei fim de ciclo"
 	except:
 		progresso.close()
 		mensagemok('RatoTV','Não conseguiu obter resposta do servidor. Servers sobrecarregados.')
@@ -2465,7 +2482,7 @@ def addDir_episodio(nomeSerie,title,description,url,temporada,episodio,sources,s
     ok=True
     contextmen = []
     if ADDON.getSetting('download-activo') == "true" and ADDON.getSetting('folder') != "Escolha a pasta":
-        contextmen.append(('Download[COLOR red] (Avariado)[/COLOR]', 'XBMC.RunPlugin(%s?mode=31&name=%s&url=%s&iconimage=%s&season=%s&episode=%s&originaltitle=%s&sources=%s&srt=%s)' % (sys.argv[0], name, url, iconimage,temporada,episodio,nomeSerie,urllib.quote_plus(str(sources)),urllib.quote_plus(srt))))
+        contextmen.append(('Download', 'XBMC.RunPlugin(%s?mode=31&name=%s&url=%s&iconimage=%s&season=%s&episode=%s&originaltitle=%s&sources=%s&srt=%s)' % (sys.argv[0], name, url, iconimage,temporada,episodio,nomeSerie,urllib.quote_plus(str(sources)),urllib.quote_plus(srt))))
     else: pass
     visto = check_visto(url,temporada,episodio)
     try:
