@@ -531,24 +531,19 @@ def listar_media(url,mode):
     except:
         ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente ou contacte um dos administradores do site.')
         return
-    #print html_source_trunk
     current_page = re.compile('cstart=(.+?)&').findall(url)
     if current_page == []: current_page= re.compile('/page/(.+?)/').findall(url)
     pag_seguinte = re.compile('<div class="next"><a href="(.+?)">').findall(html_source)
     total_paginas = re.compile('.*<a href=".+?">(.+?)</a>\n<div class="next">').findall(html_source)
     if total_paginas == []: total_paginas=re.compile('.*/page/(.+?)/">(.+?)</a> ').findall(html_source)
     totalit = len(html_source_trunk)
-    print "numero total de items:" + str(totalit)
     for html_trunk in html_source_trunk:
         try:
             infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_trunk)
-            #print "fanart",fanart
             if filme_ou_serie == 'movie': addDir_filme(name + ' ('+infolabels['Year']+')',url,3,iconimage,infolabels,fanart,totalit,False,'movie',HD,favorito)
             elif filme_ou_serie == 'tvshow': addDir_filme(name + ' ('+infolabels['Year']+')',url,10,iconimage,infolabels,fanart,totalit,True,'tvshow',HD,favorito)
         except: pass    	
-    print "pagina seguinte",pag_seguinte,"pagina actual",current_page,"total",total_paginas
     try:
-        print type(total_paginas[0])
         addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas[0]+ ') | Próxima >>>[/COLOR]',pag_seguinte[0].replace('amp;',''),mode,artfolder+'seta.jpg',True)
     except:
         try: addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas[0][0]+ ') | Próxima >>>[/COLOR]',pag_seguinte[0].replace('amp;',''),mode,artfolder+'seta.jpg',True)
@@ -721,6 +716,10 @@ def series_seasons(url,name,fanart):
 	iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,fanart)
 	for season in sorted(serie_dict_temporadas.iterkeys(),key=int):
 		if selfAddon.getSetting('series-season-poster') == 'true':
+			id_tvdb = thetvdb_api()._id(originaltitle,year)
+			json_code = trakt_api().shows_seasons(id_tvdb)
+			print season
+			print json_code
 			try:
 				for key in json_code:
 					if str(key['season']) == str(season):
@@ -2088,7 +2087,7 @@ def listar_series_subseguir(name):
 		progresso.create('RatoTV', 'A obter metadata... ')
 		progresso.update(i,'A obter metadata...')
 		for ficheiro in files:
-			seriefile = os.path.join(datapath,'tvshows-subscriptions',ficheiro)
+			seriefile = os.path.join(folder,ficheiro)
 			serie_data = readfile(seriefile) 
 			serie_array = serie_data.split('|')
 			id_rato = ficheiro.replace('.txt','')
@@ -2108,7 +2107,7 @@ def listar_series_subseguir(name):
 			else:
 				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = obter_info_url(serie_array[1],True)
 				progresso.update(int(i/float(len(files))*100),'A obter metadata...',name)
-			addDir_filme(name + ' (' + str(infolabels["Year"]) +')',url,mode,iconimage,infolabels,fanart,len(files),True,filme_ou_serie,HD,favorito)
+			addDir_filme(name + ' (' + str(infolabels["Year"]) +')',url,10,iconimage,infolabels,fanart,len(files),True,filme_ou_serie,HD,favorito)
 			i += 1
 		progresso.close()
 		moviesandseries_view()
@@ -2142,11 +2141,9 @@ def remover_subscricao_serie(name,url,iconimage):
 	xbmc.executebuiltin("XBMC.Container.Refresh")
 
 def subscrever_serie(name,url,iconimage,daemon=False):
-	print "Subscrever series",name,url,iconimage
 	id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
 	if not xbmcvfs.exists(os.path.join(datapath,'tvshows-subscriptions')): xbmcvfs.mkdir(os.path.join(datapath,'tvshows-subscriptions'))
 	save(os.path.join(datapath,'tvshows-subscriptions',str(id_ratotv) +'.txt'),name + '|'+url+'|'+iconimage)
-	print selfAddon.getSetting('libraryfolder')
 	if selfAddon.getSetting('libraryfolder'):
 		if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows')): xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows'))
 		iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,"fanart")
