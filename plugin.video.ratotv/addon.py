@@ -494,7 +494,7 @@ def filmes_homepage(name,url):
 			else:
 				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = obter_info_url(url,True)
 			i += 1
-			addDir_filme(name,url,mode,iconimage,infolabels,fanart,totalit,pasta,filme_ou_serie,HD,favorito)
+			addDir_filme(name + ' (' + str(infolabels["Year"]) + ')',url,mode,iconimage,infolabels,fanart,totalit,pasta,filme_ou_serie,HD,favorito)
 		progresso.close()
 	moviesandseries_view()
 	
@@ -1590,26 +1590,6 @@ def deixar_seguir(url):
 		xbmc.executebuiltin("XBMC.Container.Refresh")
 	except: mensagemok('RatoTV','Ocorreu um erro ao remover série. Informe os developpers deste erro!')
 
-def listar_seguir():
-	seguirpath=os.path.join(datapath,'Seguir')
-	try: dircontents=os.listdir(seguirpath)
-	except: dircontents=[]
-	print dircontents
-	if dircontents:
-		i=0
-		while i < len(dircontents):
-			try:
-				string = readfile(os.path.join(seguirpath,dircontents[i]))
-				print string
-				match = re.compile('\|(.+?)\|(.+?)\|(.+?)\|(.+?)\|(.+?)\|').findall(string)
-				print match
-			except: pass
-			infolabels = {"Title": match[0][0]}
-			addDir_filme(match[0][0],match[0][1],10,match[0][2],infolabels,fanart_rato_tv,len(dircontents),True,'tvshow',None,None)
-			i +=1
-		homepage_view()
-	else:
-		mensagemok('RatoTV','Não está a seguir nenhuma série.'),sys.exit(0)
 
 ###
 
@@ -2079,20 +2059,46 @@ def transferir_biblioteca_filmes(name):
 		progresso.close()
 	if not canceled and i >= 1: xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
 
-def listar_series_subscritas():
-	folder = os.path.join(datapath,'tvshows-subscriptions')
+def listar_series_subseguir(name):
+	if name == "subscritas":
+		folder = os.path.join(datapath,'tvshows-subscriptions')
+		message = 'Não tem séries subscritas.'
+	elif name == "seguir":
+		folder = os.path.join(datapath,'Seguir')
+		message = 'Não está a seguir nenhuma série'
+	if not xbmcvfs.exists(folder):xbmcvfs.mkdir(folder)
 	dirs, files = xbmcvfs.listdir(folder)
 	if len(files) > 0:
+		i=0
+		progresso.create('RatoTV', 'A obter metadata... ')
+		progresso.update(i,'A obter metadata...')
 		for ficheiro in files:
 			seriefile = os.path.join(datapath,'tvshows-subscriptions',ficheiro)
 			serie_data = readfile(seriefile) 
 			serie_array = serie_data.split('|')
-			infolabels = {"Title": serie_array[0]}
-			try: addDir_filme(serie_array[0],serie_array[1],10,serie_array[2],infolabels,fanart_rato_tv,len(files),True,'tvshow',None,None)
-			except: pass
-		homepage_view()
+			id_rato = ficheiro.replace('.txt','')
+			media_database_folder = os.path.join(datapath,'media_database')
+			txt_file = os.path.join(media_database_folder,id_rato + '.txt')
+			if not xbmcvfs.exists(media_database_folder): xbmcvfs.mkdir(media_database_folder)
+			if xbmcvfs.exists(txt_file):
+				data = readfile(txt_file).split('|')
+				name = data[0]
+				url = data[1]
+				iconimage = data[3]
+				infolabels = eval(data[2])
+				fanart = urllib.unquote(data[4])
+				filme_ou_serie = data[5]
+				HD = eval(data[6])
+				favorito = eval(data[7])		
+			else:
+				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = obter_info_url(serie_array[1],True)
+				progresso.update(int(i/float(len(files))*100),'A obter metadata...',name)
+			addDir_filme(name + ' (' + str(infolabels["Year"]) +')',url,mode,iconimage,infolabels,fanart,len(files),True,filme_ou_serie,HD,favorito)
+			i += 1
+		progresso.close()
+		moviesandseries_view()
 	else:
-		ok=mensagemok('RatoTV','Não tem séries subscritas.')
+		ok=mensagemok('RatoTV',message)
 		sys.exit(0)
 		
 def remover_subscricao_serie(name,url,iconimage):
@@ -2614,7 +2620,7 @@ elif mode==22: remover_visto(url,season,episode)
 elif mode==23: play_video(name,url,iconimage,sources,srt,seriesName,season,episode)
 elif mode==24: reportar(url)
 elif mode==25: adicionar_seguir(url,name,iconimage)
-elif mode==26: listar_seguir()
+elif mode==26: listar_series_subseguir("seguir")
 elif mode==27: deixar_seguir(url)
 elif mode==28: proximo_episodio(url)
 elif mode==29: teste("S01E05","http://www.ratotv.net/movies/4633-iron-sky.html")
@@ -2633,9 +2639,9 @@ elif mode==41: pesquisa_ano(url)
 elif mode==42: menu_ano()
 elif mode==43: subscrever_serie(name,url,iconimage)
 elif mode==44: play_from_outside(name,url)
-elif mode==45: listar_series_subscritas()
+elif mode==45: listar_series_subseguir("subscritas")
 elif mode==46: remover_subscricao_serie(name,url,iconimage)
-elif mode==47: transferir_biblioteca_filmes('novos')
+elif mode==47: transferir_biblioteca_filmes('todos')
 elif mode==48: procurar_novas_series()
 elif mode==49: adicionar_filme_biblioteca(name,url,iconimage)
 
