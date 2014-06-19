@@ -17,6 +17,7 @@
       <setting id="votar-stopped" type="bool" label="Classificar media apos visualizacao" default="true"/>
       <setting id="mensagem-pedidos" type="bool" label="Apresentar mensagem de instruções para pedidos" default="true"/>
       <setting id="sync-trakt" type="bool" label="Sincronizar trakt" default="false"/>
+      <setting id="limpar-metadata" type="bool" label="Apagar conteudo pasta metadata" visible="false" default="true"/>
    </category>
    <category label="Filmes">
       <setting label="[B][COLOR green]Definições para Filmes:[/B][/COLOR]" type="lsep" />
@@ -34,11 +35,11 @@
       <setting id="libraryfolder" type="folder" label="Pasta da biblioteca" default=""/>
       <setting label="[B][COLOR green]Séries:[/B][/COLOR]" type="lsep" />
       <setting id="series-library" type="bool" label="Procurar novos episódios (service.py)" default="false"/>
-      <setting type="action" label="Procurar novos episódios agora" option="close" action="RunPlugin(plugin://plugin.video.ratotv/?mode=48)" />
+      <setting type="action" label="Procurar novos episódios agora" option="close" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=48&name=rato&url=ratotv.net)" />
       <setting label="[B][COLOR green]Filmes:[/B][/COLOR]" type="lsep" />
       <setting id="filmes-library" type="bool" label="Procurar novos filmes (service.py)" default="false"/>
-      <setting type="action" label="Transferir toda a biblioteca de filmes"  action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=47&name=todos)" />
-      <setting type="action" label="Procurar novos filmes agora" option="close" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=49)" />
+      <setting type="action" label="Transferir toda a biblioteca de filmes"  action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=47&name=todos&url=ratotv.net)" />
+      <setting type="action" label="Procurar novos filmes agora" option="close" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=47&name=novos&url=ratotv.net)" />
       <setting label="[B][COLOR green]Gestão da biblioteca XBMC:[/B][/COLOR]" type="lsep" />
       <setting type="action" label="Actualizar biblioteca"  action="XBMC.UpdateLibrary(video)" />
       <setting type="action" label="'Limpar' a biblioteca" option="close" action="XBMC.CleanLibrary(video)" />
@@ -48,7 +49,6 @@
      <setting id="menu-view" type="enum" label="Vista - Menus" values="Lista|Lista Grande" default="0"/>
      <setting id="moviesandseries-view" type="enum" label="Vista - Filmes e Séries" values="Lista|Lista Grande|Miniatura|Posters|Fanart|Media Info 1|Media Info 2|Media Info 3" default="6"/>
      <setting id="episodes-view" type="enum" label="Vista - Menu de episodios" values="Lista|Lista Grande|Miniatura" default="2"/>
-     <setting id="homepage-view" type="enum" label="Vista - Filmes e Séries da Homepage" values="Lista|Lista Grande|Miniatura|Posters|Fanart|Media Info 1|Media Info 2|Media Info 3" default="3"/>
      <setting id="pedidos-view" type="enum" label="Vista - Menu de pedidos" values="Lista|Lista Grande|Miniatura|Posters|Fanart|Media Info 1|Media Info 2|Media Info 3" default="6"/>
    </category>
       <category label="Download">

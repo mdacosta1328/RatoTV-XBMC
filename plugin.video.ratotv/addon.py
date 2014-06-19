@@ -37,47 +37,35 @@ mensagemok = xbmcgui.Dialog().ok
 progresso = xbmcgui.DialogProgress()
 tmdb_base_url = 'http://d3gtl9l2a4fn1j.cloudfront.net/t/p/w1280'
 fanart_rato_tv = addonfolder + '/fanart.jpg'
-
-######################################################################################################
-#                                        GOOGLE ANALYTICS CONFIGURATION                              #
-######################################################################################################
-
-if selfAddon.getSetting('ga_visitor')=='':
-    from random import randint
-    selfAddon.setSetting('ga_visitor',str(randint(0, 0x7fffffff)))
-
-PATH = "ratotv"  #<---- PLUGIN NAME MINUS THE "plugin.video"
-UATRACK="UA-41937813-3" #<---- GOOGLE ANALYTICS UA NUMBER
-VERSION = "1.1.0" #<---- PLUGIN VERSION
+setting_limpar_metadata = "limpar-metadata"
 
 ######################################################################################################
 #                                               MENUS                                                #
 ######################################################################################################
 
 def Menu_principal():
-    login_sucessful = check_login()
-    if login_sucessful == True:
-	addDir_reg_menu('Menu Teste','url',47,artfolder+'filmes.jpg',False)
-        addDir_reg_menu('Filmes','url',1,artfolder+'filmes.jpg',True)
-        addDir_reg_menu('Séries',base_url,8,artfolder+'series.jpg',True)
-        addDir_reg_menu('Pedidos',"http://www.ratotv.net/requests/page/1/",33,artfolder+'contactar.jpg',True)
-        addDir_reg_menu('Pesquisar','url',4,artfolder+'pesquisa.jpg',True)
-        addDir_reg_menu('','','',addonfolder+'logo.png',False)
-        addDir_reg_menu('Favoritos','http://www.ratotv.net/favorites/page/1/',15,artfolder+'favoritos.jpg',True)
-	addDir_reg_menu('Séries subscritas',base_url + 'index.php?cstart=1&do=cat&category=tvshows',45,artfolder+'series.jpg',True)
-	addDir_reg_menu('Séries a seguir',base_url + 'index.php?cstart=1&do=cat&category=tvshows',26,artfolder+'series.jpg',True)
-        addDir_reg_menu('Géneros','url',5,artfolder+'categorias.jpg',True)
-        addDir_reg_menu('Ano','url',42,artfolder+'pesquisa.jpg',True)
-        addDir_reg_menu('Definições','url',9,artfolder+'definicoes.jpg',True)
-        addDir_reg_menu('','','',addonfolder+'logo.png',False)
-	mensagens_conta()
-        menu_view()
+	login_sucessful = check_login()
+	if login_sucessful == True:
+		addDir_reg_menu('Filmes','url',1,artfolder+'filmes.jpg',True)
+		addDir_reg_menu('Séries',base_url,8,artfolder+'series.jpg',True)
+		addDir_reg_menu('Pedidos',"http://www.ratotv.net/requests/page/1/",33,artfolder+'contactar.jpg',True)
+		addDir_reg_menu('Pesquisar','url',4,artfolder+'pesquisa.jpg',True)
+		addDir_reg_menu('','','',addonfolder+'logo.png',False)
+		addDir_reg_menu('Favoritos','http://www.ratotv.net/favorites/page/1/',15,artfolder+'favoritos.jpg',True)
+		addDir_reg_menu('Séries subscritas',base_url + 'index.php?cstart=1&do=cat&category=tvshows',45,artfolder+'series.jpg',True)
+		addDir_reg_menu('Séries a seguir',base_url + 'index.php?cstart=1&do=cat&category=tvshows',26,artfolder+'series.jpg',True)
+		addDir_reg_menu('Géneros','url',5,artfolder+'categorias.jpg',True)
+		addDir_reg_menu('Ano','url',42,artfolder+'pesquisa.jpg',True)
+		addDir_reg_menu('Definições','url',9,artfolder+'definicoes.jpg',True)
+		addDir_reg_menu('','','',addonfolder+'logo.png',False)
+		mensagens_conta()
+		#if selfAddon.getSetting(setting_limpar_metadata) == "true": limpar_pasta_metadata()
+		menu_view()
 	if selfAddon.getSetting('novos-episodios') == "true": verificar_novos()
-        GA("None","Menu inicial")
-    else:
-        addDir_reg_menu('Alterar Definições','url',9,artfolder+'definicoes.jpg',False)
-        addDir_reg_menu('Tentar Novamente','url',None,artfolder+'refresh.jpg',True)
-        menu_view()
+	else:
+		addDir_reg_menu('Alterar Definições','url',9,artfolder+'definicoes.jpg',False)
+		addDir_reg_menu('Tentar Novamente','url',None,artfolder+'refresh.jpg',True)
+		menu_view()
 
 def Menu_principal_series():
     addDir_reg_menu('Todas as séries',base_url + 'index.php?cstart=1&do=cat&category=tvshows',2,artfolder+'series.jpg',True)
@@ -88,7 +76,6 @@ def Menu_principal_series():
     addDir_reg_menu('Séries mais vistas',base_url,6,artfolder+'series-mais.jpg',True)
     addDir_reg_menu('Séries mais votadas',base_url,6,artfolder+'series-mais.jpg',True)
     menu_view()
-    GA("None","Series")
 
 def Menu_principal_filmes():
     addDir_reg_menu('Todos os filmes',base_url + 'movies/page/1/',2,artfolder+'filmes.jpg',True)
@@ -97,7 +84,6 @@ def Menu_principal_filmes():
     addDir_reg_menu('Filmes mais vistos',base_url,6,artfolder+'filmes-mais.jpg',True)
     addDir_reg_menu('Filmes mais votados',base_url,6,artfolder+'filmes-mais.jpg',True)
     menu_view()
-    GA("None","Filmes")
 
 def Menu_categorias_filmes():
     addDir_reg_menu('Acção',base_url + 'tags/Ação/page/1/',2,artfolder+'filmes.jpg',True)
@@ -352,7 +338,6 @@ def player_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 		match = re.compile('\((.+?)\)').findall(infolabels['TVShowTitle'])
 		if match: infolabels['TVShowTitle']=infolabels['TVShowTitle'].replace(match[0],'').replace('(','').replace(')','')
 	print video,subs,name,iconimage,infolabels
-	GA("None",name)
 	playlist = xbmc.PlayList(1)
 	playlist.clear()
 	if originaltitle: name = originaltitle
@@ -452,62 +437,92 @@ def pesquisa_ano(url):
 	else: sys.exit(0)
 
 def filmes_homepage(name,url):
-    try: html_source = abrir_url(url)
-    except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente ou contacte um dos administradores do site.');html_source = ''
-    if name == 'Filmes mais vistos':
-        GA("None","Filmes mais vistos")
-        pasta = False
-        mode = 3
-        html_source_trunk = re.findall('<div id="viewed">(.*?)<div id="rated">', html_source, re.DOTALL)
-    elif name == 'Filmes mais populares':
-        GA("None","Filmes mais populares")
-        pasta = False
-        mode = 3
-        html_source_trunk = re.findall('<div id="popular">(.*?)<div id="viewed">', html_source, re.DOTALL)
-    elif name == 'Filmes mais recentes':
-        GA("None","Filmes mais recentes")
-        pasta = False
-        mode = 3
-        html_source_trunk = re.findall('<div id="new"(.*?)<div id="popular">', html_source, re.DOTALL)
-    elif name == 'Filmes mais votados':
-        GA("None","Filmes mais votados")
-        pasta = False
-        mode = 3
-        html_source_trunk = re.findall('<div id="rated">(.*?)</div></div>', html_source, re.DOTALL)
-    elif name == 'Séries mais vistas':
-        GA("None","Séries mais vistas")
-        pasta = True
-        mode = 10
-        html_source_trunk = re.findall('<div id="viewed2">(.*?)<div id="rated2">', html_source, re.DOTALL)
-    elif name == 'Séries mais populares':
-        GA("None","Séries mais populares")
-        pasta = True
-        mode = 10
-        html_source_trunk = re.findall('<div id="popular2">(.*?)<div id="viewed2">', html_source, re.DOTALL)
-    elif name == 'Séries mais recentes':
-        GA("None","Séries mais recentes")
-        pasta = True
-        mode = 10
-        html_source_trunk = re.findall('<div id="new2">(.*?)<div id="popular2">', html_source, re.DOTALL)
-    elif name == 'Séries mais votadas':
-        GA("None","Séries mais votadas")
-        pasta = True
-        mode = 10
-        html_source_trunk = re.findall('<div id="rated2">(.*?)</div></div>', html_source, re.DOTALL)
-    if html_source:
-        match = re.compile('<img src="(.+?)" alt=".+?"/><span>(.+?)</span><a href="(.+?)"').findall(html_source_trunk[0])
-        totalit = len(match)
-        print "totalit",totalit
-        for img,titulo,url in match:
-            #if seq.find('<a href="http://www.ratotv.net/xfsearch/HD/">HD</a>') != -1: HD = True
-            #else: HD = False
-            HD = "" # RETIRA A INFORMACAO DO HD
-            infolabels = {"Title": titulo, "Originaltitle": titulo}
-            if img.find('http://') == -1: img = base_url + img
-            else: pass
-            addDir_filme(titulo,url,mode,img,infolabels,fanart_rato_tv,totalit,pasta,'movie',HD,None)
-    else:pass
-    homepage_view()
+	try: html_source = abrir_url(url)
+	except: ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente ou contacte um dos administradores do site.');sys.exit(0)
+	if name == 'Filmes mais vistos':
+		pasta = False
+		mode = 3
+		html_source_trunk = re.findall('<div id="viewed">(.*?)<div id="rated">', html_source, re.DOTALL)
+	elif name == 'Filmes mais populares':
+		pasta = False
+		mode = 3
+		html_source_trunk = re.findall('<div id="popular">(.*?)<div id="viewed">', html_source, re.DOTALL)
+	elif name == 'Filmes mais recentes':
+		pasta = False
+		mode = 3
+		html_source_trunk = re.findall('<div id="new"(.*?)<div id="popular">', html_source, re.DOTALL)
+	elif name == 'Filmes mais votados':
+		pasta = False
+		mode = 3
+		html_source_trunk = re.findall('<div id="rated">(.*?)</div></div>', html_source, re.DOTALL)
+	elif name == 'Séries mais vistas':
+		pasta = True
+		mode = 10
+		html_source_trunk = re.findall('<div id="viewed2">(.*?)<div id="rated2">', html_source, re.DOTALL)
+	elif name == 'Séries mais populares':
+		pasta = True
+		mode = 10
+		html_source_trunk = re.findall('<div id="popular2">(.*?)<div id="viewed2">', html_source, re.DOTALL)
+	elif name == 'Séries mais recentes':
+		pasta = True
+		mode = 10
+		html_source_trunk = re.findall('<div id="new2">(.*?)<div id="popular2">', html_source, re.DOTALL)
+	elif name == 'Séries mais votadas':
+		pasta = True
+		mode = 10
+		html_source_trunk = re.findall('<div id="rated2">(.*?)</div></div>', html_source, re.DOTALL)
+	if html_source:
+		match = re.compile('<img src="(.+?)" alt=".+?"/><span>(.+?)</span><a href="(.+?)"').findall(html_source_trunk[0])
+		totalit = len(match)
+		progresso.create('RatoTV', 'A obter metadata... ')
+		progresso.update(0,'A obter metadata...')
+		i=0
+		for img,titulo,url in match:
+			progresso.update(int(i/float(totalit)*100),'A obter metadata...',titulo)
+			id_rato = re.compile('.*/(.+?)-.+?html').findall(url)
+			userdata_folder = os.path.join(datapath,"media_database")
+			txt_file = os.path.join(userdata_folder,id_rato[0] + '.txt')
+			if xbmcvfs.exists(txt_file):
+				data = readfile(txt_file).split('|')
+				name = data[0]
+				url = data[1]
+				iconimage = data[3]
+				infolabels = eval(data[2])
+				fanart = urllib.unquote(data[4])
+				filme_ou_serie = data[5]
+				HD = eval(data[6])
+				favorito = eval(data[7])			
+			else:
+				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = obter_info_url(url,True)
+			i += 1
+			addDir_filme(name + ' (' + str(infolabels["Year"]) + ')',url,mode,iconimage,infolabels,fanart,totalit,pasta,filme_ou_serie,HD,favorito)
+		progresso.close()
+	moviesandseries_view()
+	
+#Funcao para devolver informaçao de um filme/serie dado o url
+def obter_info_url(url,salvar=False):
+	codigo_fonte = post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+	html_source_trunk = re.findall('<div class="shortpost(.*?)Reportar</a></li>', codigo_fonte, re.DOTALL)
+	if html_source_trunk:
+		infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_source_trunk[0])
+		if salvar:
+			id_rato = re.compile('.*/(.+?)-.+?html').findall(url)
+			userdata_folder = os.path.join(datapath,"media_database")
+			if not xbmcvfs.exists(userdata_folder):
+				xbmcvfs.mkdir(userdata_folder)
+			txt_file = os.path.join(userdata_folder,id_rato[0] + '.txt')
+			save(txt_file, name + '|' + url + '|'+str(infolabels)+'|' + iconimage + '|'  + urllib.quote(fanart) + '|' + filme_ou_serie +'|'+str(HD)+'|' + str(favorito))
+		return infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito
+		
+#funcao para limpar metadata
+def limpar_pasta_metadata():
+	userdata_folder = os.path.join(datapath,"media_database")
+	if xbmcvfs.exists(userdata_folder):
+		dirs, files = xbmcvfs.listdir(folder)
+		for ficheiro in files:
+			xbmcvfs.delete(os.path.join(userdata_folder,ficheiro))
+		selfAddon.setSetting(setting_limpar_metadata,"false")
+	return
 
 def listar_media(url,mode):
     try:
@@ -516,24 +531,19 @@ def listar_media(url,mode):
     except:
         ok=mensagemok('RatoTV','Não foi possível abrir a página. Tente novamente ou contacte um dos administradores do site.')
         return
-    #print html_source_trunk
     current_page = re.compile('cstart=(.+?)&').findall(url)
     if current_page == []: current_page= re.compile('/page/(.+?)/').findall(url)
     pag_seguinte = re.compile('<div class="next"><a href="(.+?)">').findall(html_source)
     total_paginas = re.compile('.*<a href=".+?">(.+?)</a>\n<div class="next">').findall(html_source)
     if total_paginas == []: total_paginas=re.compile('.*/page/(.+?)/">(.+?)</a> ').findall(html_source)
     totalit = len(html_source_trunk)
-    print "numero total de items:" + str(totalit)
     for html_trunk in html_source_trunk:
         try:
             infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_trunk)
-            #print "fanart",fanart
             if filme_ou_serie == 'movie': addDir_filme(name + ' ('+infolabels['Year']+')',url,3,iconimage,infolabels,fanart,totalit,False,'movie',HD,favorito)
             elif filme_ou_serie == 'tvshow': addDir_filme(name + ' ('+infolabels['Year']+')',url,10,iconimage,infolabels,fanart,totalit,True,'tvshow',HD,favorito)
         except: pass    	
-    print "pagina seguinte",pag_seguinte,"pagina actual",current_page,"total",total_paginas
     try:
-        print type(total_paginas[0])
         addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas[0]+ ') | Próxima >>>[/COLOR]',pag_seguinte[0].replace('amp;',''),mode,artfolder+'seta.jpg',True)
     except:
         try: addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas[0][0]+ ') | Próxima >>>[/COLOR]',pag_seguinte[0].replace('amp;',''),mode,artfolder+'seta.jpg',True)
@@ -604,7 +614,7 @@ def rato_tv_get_media_info(html_trunk):
     match = re.compile('<strong>IMDB: </strong><a href="http://www.imdb.com/title/(.+?)/"').findall(html_trunk)
     if match != []:data_dict['code'] = match[0]
     else: data_dict['code'] = ''
-    match = re.compile('<strong>Diretor:</strong>(.+?)</li>').findall(html_trunk)
+    match = re.compile('<strong>Diretor:</strong>.+?>(.+?)</a>').findall(html_trunk)
     for director in match:
         data_dict['Director'] = director
     match = re.compile('rating=(.+?)&votes').findall(html_trunk)
@@ -706,6 +716,10 @@ def series_seasons(url,name,fanart):
 	iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,fanart)
 	for season in sorted(serie_dict_temporadas.iterkeys(),key=int):
 		if selfAddon.getSetting('series-season-poster') == 'true':
+			id_tvdb = thetvdb_api()._id(originaltitle,year)
+			json_code = trakt_api().shows_seasons(id_tvdb)
+			print season
+			print json_code
 			try:
 				for key in json_code:
 					if str(key['season']) == str(season):
@@ -754,7 +768,6 @@ def download_qualidade(url,name,iconimage):
 	        		if len(subs) >= 1: subs = base_url + str(subs[0])
 	        		else: subs = ''
 	    		except: subs = ''
-	   		print titles,url_movie_file,subs
 	    		if selfAddon.getSetting('qualidade-auto') == "false":
 	        		choose=escolher_qualidade('Seleccione a qualidade',titles)
 	       			if choose > -1: linkescolha=downloader_rato(url_movie_file[choose],subs,name,url,iconimage,'',None,None)
@@ -764,7 +777,6 @@ def download_qualidade(url,name,iconimage):
 				rss_escolhido = int(opcao)-1;print rss_escolhido
 				rss_source = abrir_url(urllib.quote(rssopcao[rss_escolhido], safe=":/"))
 			except: ok=mensagemok('RatoTV','Não foi possível abrir o feed da opção 1')
-			print rss_source
 			if rss_source: hash_movie = re.compile('<location>ratotv*(.+?)</location>').findall(rss_source)[0].replace("*","")
 			else: ok=mensagemok('RatoTV','Não conseguiu obter a hash.')
 			try: decoded_url = resolver_externos(hash_movie)
@@ -774,24 +786,39 @@ def download_qualidade(url,name,iconimage):
         			if len(subs) >= 1: subs = base_url + str(subs[0])
         			else: subs = ''
     			except: subs = ''
-			print subs
-			downloader_rato(decoded_url,subs,name,url,iconimage,'',None,None)
-	elif tipo == "tvshow": pass
-
-#def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
-	#videos = "rtmp://95.211.209.210:1935/vod?h=rki7hbapyxuzcg3h5eacffvkybonuxzrgxil262y7qpygdrkg5hsfziimehq/16/6355539226_n.flv?h=rki7hbapyxuzcg3h5eacffvkybonuxzrgxil262y7qpygdrkg5hsfziimehq"
-	#import SimpleDownloader as downloader
- 	#downloader = downloader.SimpleDownloader()
-	#params = {"url": videos, "download_path": "/home/miguel/Documentos/eultra", "Title": "Coiso"}
- 	#downloader.download("bun.mp4", params)
+    			infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = obter_info_url(url)
+			downloader_rato(decoded_url,subs,infolabels["originaltitle"] + ' ('+infolabels["Year"] +')',url,iconimage,'',None,None)
+	elif tipo == "tvshow":
+		srt=urllib.unquote_plus(params["srt"])
+		source=eval(sources)
+		srt=eval(srt)
+		num_opcoes = len(source)
+		if num_opcoes == 1: opcao = "1"
+		elif num_opcoes == 2:
+			janela2qualidades()
+			opcao = readfile(datapath + "option.txt")
+		elif num_opcoes == 3:
+			janela3qualidades()
+			opcao = readfile(datapath + "option.txt")
+		else: ok=mensagemok('RatoTV','Ocorreu um erro. Tente novamente.'); sys.exit(0)
+		if opcao == '10': sys.exit(0)
+		else:
+			if "http" in source[int(opcao)-1]:
+				decoded_url = source[int(opcao)-1]
+				source[int(opcao)-1] = decoded_url
+			else:
+				decoded_url = resolver_externos(source[int(opcao)-1])
+				source[int(opcao)-1] = decoded_url
+			if "../" in srt[int(opcao)-1]: srt[int(opcao)-1] = srt[int(opcao)-1].replace("../",base_url)
+			infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = obter_info_url(url)
+			downloader_rato(decoded_url,srt[int(opcao)-1],infolabels["originaltitle"],url,iconimage,'',season,episode)
+			
 
 def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 	print subs,video
 	progresso.create('Downloader RatoTV', name ,'A obter resposta do servidor...Aguarde.')
 	file_name = video.split('/')[-1]
-	print "estou aqui"
 	if "ratotv" in video:
-		print "server do rato"
 		request = urllib2.Request(video, headers={"Host" : "ratotv.com","Referer":url})
 	else: request = urllib2.Request(video)
 	try:
@@ -803,10 +830,10 @@ def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 			folder_name_serie = ADDON.getSetting('folder') + 'series/' + name.replace(':','')
 			if os.path.exists(folder_name_serie): pass
 			else: os.mkdir( folder_name_serie , 0777 );
-			folder_name_serie_temporada = folder_name_serie + "/Season" + str(season)
+			folder_name_serie_temporada = folder_name_serie + "/Season " + str(season)
 			if os.path.exists(folder_name_serie_temporada): pass
 			else: os.mkdir( folder_name_serie_temporada , 0777 );
-			folder_name = folder_name_serie_temporada + '/' + name.replace(':','') + "-Season" + str(season) + "Episode" + str(episode)
+			folder_name = folder_name_serie_temporada + '/' + name.replace(':','') + " S" + str(season) + "E" + str(episode)
 			if os.path.exists(folder_name): pass
 			else: os.mkdir( folder_name , 0777 );
 		else:
@@ -839,11 +866,9 @@ def downloader_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 			elif progresso.iscanceled() == 1:
 				f.close()
 				progresso.close()
-				print "Downloader dialog fechada"
 				break
 		f.close()
 		progresso.close()
-		print "Parei fim de ciclo"
 	except:
 		progresso.close()
 		mensagemok('RatoTV','Não conseguiu obter resposta do servidor. Servers sobrecarregados.')
@@ -873,12 +898,10 @@ def check_login():
             else:
                     resultado = True
                     xbmc.executebuiltin("XBMC.Notification(RatoTv," + selfAddon.getSetting('login_name') + " -Sessão iniciada!,'10000',"+addonfolder+"/icon.png)")
-                    #if selfAddon.getSetting('mensagem-site') == "true": mensagem_site(post_page(base_url + 'templates/ratotv/js/word.js' ,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password')))
                     return resultado
         else:
             resultado = True
             xbmc.executebuiltin("XBMC.Notification(RatoTv," + selfAddon.getSetting('login_name') + " -Sessão iniciada!,'10000',"+addonfolder+"/icon.png)")
-            #if selfAddon.getSetting('mensagem-site') == "true": mensagem_site(post_page(base_url + 'templates/ratotv/js/word.js' ,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password')))
             return resultado
 
 def menu_view():
@@ -904,20 +927,6 @@ def moviesandseries_view():
 def pedidos_view():
     xbmcplugin.setContent(int(sys.argv[1]), 'Movies')
     setting = selfAddon.getSetting('pedidos-view')
-    if setting == "0": xbmc.executebuiltin("Container.SetViewMode(50)")
-    elif setting == "1": xbmc.executebuiltin("Container.SetViewMode(51)")
-    elif setting == "2": xbmc.executebuiltin("Container.SetViewMode(500)")
-    elif setting == "3": xbmc.executebuiltin("Container.SetViewMode(501)")
-    elif setting == "4": xbmc.executebuiltin("Container.SetViewMode(508)")
-    elif setting == "5": xbmc.executebuiltin("Container.SetViewMode(504)")
-    elif setting == "6": xbmc.executebuiltin("Container.SetViewMode(503)")
-    elif setting == "7": xbmc.executebuiltin("Container.SetViewMode(515)")
-    xbmcplugin.setContent(int(sys.argv[1]), 'Movies')
-    return
-
-def homepage_view():
-    xbmcplugin.setContent(int(sys.argv[1]), 'Movies')
-    setting = selfAddon.getSetting('homepage-view')
     if setting == "0": xbmc.executebuiltin("Container.SetViewMode(50)")
     elif setting == "1": xbmc.executebuiltin("Container.SetViewMode(51)")
     elif setting == "2": xbmc.executebuiltin("Container.SetViewMode(500)")
@@ -1177,11 +1186,8 @@ def estatisticas_trakt(url):
 				if len(data) > 0:
 					texto += str(len(data)) +' utilizadores a ver neste momento\n\n'
 				else: texto += 'Ninguém a assistir neste momento \n\n'
-			#print data
 			except: pass
-			print url_api_trakt
 			data = json_get(url_api_trakt)
-			print data
 			try: texto += 'Já viram: ' + str(data['stats']['watchers']) + ' pessoas\n\n'
 			except: pass
 			try: texto += 'Visto: ' + str(data['stats']['plays']) + ' vezes\n\n'
@@ -1598,26 +1604,6 @@ def deixar_seguir(url):
 		xbmc.executebuiltin("XBMC.Container.Refresh")
 	except: mensagemok('RatoTV','Ocorreu um erro ao remover série. Informe os developpers deste erro!')
 
-def listar_seguir():
-	seguirpath=os.path.join(datapath,'Seguir')
-	try: dircontents=os.listdir(seguirpath)
-	except: dircontents=[]
-	print dircontents
-	if dircontents:
-		i=0
-		while i < len(dircontents):
-			try:
-				string = readfile(os.path.join(seguirpath,dircontents[i]))
-				print string
-				match = re.compile('\|(.+?)\|(.+?)\|(.+?)\|(.+?)\|(.+?)\|').findall(string)
-				print match
-			except: pass
-			infolabels = {"Title": match[0][0]}
-			addDir_filme(match[0][0],match[0][1],10,match[0][2],infolabels,fanart_rato_tv,len(dircontents),True,'tvshow',None,None)
-			i +=1
-		homepage_view()
-	else:
-		mensagemok('RatoTV','Não está a seguir nenhuma série.'),sys.exit(0)
 
 ###
 
@@ -1979,10 +1965,14 @@ def adicionar_filme_biblioteca(name,url,iconimage):
 		if html_source_trunk:
 			infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_source_trunk[0])
 			movie_folder = os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')')
+			userdata_folder = os.path.join(datapath,'movie-subscriptions')
+			if not xbmcvfs.exists(userdata_folder): xbmcvfs.mkdir(userdata_folder)
 			if not xbmcvfs.exists(movie_folder): xbmcvfs.mkdir(movie_folder)
 			strm_contents = 'plugin://plugin.video.ratotv/?url=' + url +'&mode=44&name=' + urllib.quote_plus(infolabels['originaltitle'])
-			movie_database_file = os.path.join(movie_folder,id_ratotv+'.txt')
-			save(movie_database_file,strm_contents)
+			movie_database_file = os.path.join(userdata_folder,id_ratotv+'.txt')
+			movie_biblioteca_file = os.path.join(movie_folder,urllib.quote_plus(infolabels['originaltitle'])+'.strm')
+			save(movie_biblioteca_file,strm_contents)
+			save(movie_database_file,"check")
 			xbmc.executebuiltin("XBMC.Notification(RatoTv,Filme adicionado à biblioteca!,'10000',"+addonfolder+"/icon.png)")
 			xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
 
@@ -2012,6 +2002,7 @@ def procurar_novas_series():
 			
 
 def transferir_biblioteca_filmes(name):
+
 	#verifica se a pasta para o download da biblioteca está definida
 
 	if selfAddon.getSetting('libraryfolder'): pass
@@ -2070,9 +2061,12 @@ def transferir_biblioteca_filmes(name):
 					if xbmcvfs.exists(movie_database_file):
 						current_page = int(total_paginas)
 						break
+						
 			#salva ficheiro na userdata para saber se item ja foi transferido anteriormente
+			
 				if not xbmcvfs.exists(movie_database_file): save(movie_database_file,'check')
 			#salva stream
+			
 				save(strm_filme,strm_contents)
 				i +=1
 
@@ -2083,20 +2077,46 @@ def transferir_biblioteca_filmes(name):
 		progresso.close()
 	if not canceled and i >= 1: xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
 
-def listar_series_subscritas():
-	folder = os.path.join(datapath,'tvshows-subscriptions')
+def listar_series_subseguir(name):
+	if name == "subscritas":
+		folder = os.path.join(datapath,'tvshows-subscriptions')
+		message = 'Não tem séries subscritas.'
+	elif name == "seguir":
+		folder = os.path.join(datapath,'Seguir')
+		message = 'Não está a seguir nenhuma série'
+	if not xbmcvfs.exists(folder):xbmcvfs.mkdir(folder)
 	dirs, files = xbmcvfs.listdir(folder)
 	if len(files) > 0:
+		i=0
+		progresso.create('RatoTV', 'A obter metadata... ')
+		progresso.update(i,'A obter metadata...')
 		for ficheiro in files:
-			seriefile = os.path.join(datapath,'tvshows-subscriptions',ficheiro)
+			seriefile = os.path.join(folder,ficheiro)
 			serie_data = readfile(seriefile) 
 			serie_array = serie_data.split('|')
-			infolabels = {"Title": serie_array[0]}
-			try: addDir_filme(serie_array[0],serie_array[1],10,serie_array[2],infolabels,fanart_rato_tv,len(files),True,'tvshow',None,None)
-			except: pass
-		homepage_view()
+			id_rato = ficheiro.replace('.txt','')
+			media_database_folder = os.path.join(datapath,'media_database')
+			txt_file = os.path.join(media_database_folder,id_rato + '.txt')
+			if not xbmcvfs.exists(media_database_folder): xbmcvfs.mkdir(media_database_folder)
+			if xbmcvfs.exists(txt_file):
+				data = readfile(txt_file).split('|')
+				name = data[0]
+				url = data[1]
+				iconimage = data[3]
+				infolabels = eval(data[2])
+				fanart = urllib.unquote(data[4])
+				filme_ou_serie = data[5]
+				HD = eval(data[6])
+				favorito = eval(data[7])		
+			else:
+				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = obter_info_url(serie_array[1],True)
+				progresso.update(int(i/float(len(files))*100),'A obter metadata...',name)
+			addDir_filme(name + ' (' + str(infolabels["Year"]) +')',url,10,iconimage,infolabels,fanart,len(files),True,filme_ou_serie,HD,favorito)
+			i += 1
+		progresso.close()
+		moviesandseries_view()
 	else:
-		ok=mensagemok('RatoTV','Não tem séries subscritas.')
+		ok=mensagemok('RatoTV',message)
 		sys.exit(0)
 		
 def remover_subscricao_serie(name,url,iconimage):
@@ -2125,11 +2145,9 @@ def remover_subscricao_serie(name,url,iconimage):
 	xbmc.executebuiltin("XBMC.Container.Refresh")
 
 def subscrever_serie(name,url,iconimage,daemon=False):
-	print "Subscrever series",name,url,iconimage
 	id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
 	if not xbmcvfs.exists(os.path.join(datapath,'tvshows-subscriptions')): xbmcvfs.mkdir(os.path.join(datapath,'tvshows-subscriptions'))
 	save(os.path.join(datapath,'tvshows-subscriptions',str(id_ratotv) +'.txt'),name + '|'+url+'|'+iconimage)
-	print selfAddon.getSetting('libraryfolder')
 	if selfAddon.getSetting('libraryfolder'):
 		if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows')): xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows'))
 		iconimage,originaltitle,year,serie_dict_temporadas = series_seasons_get_dictionary(url,name,"fanart")
@@ -2466,7 +2484,7 @@ def addDir_episodio(nomeSerie,title,description,url,temporada,episodio,sources,s
     ok=True
     contextmen = []
     if ADDON.getSetting('download-activo') == "true" and ADDON.getSetting('folder') != "Escolha a pasta":
-        contextmen.append(('Download[COLOR red] (Avariado)[/COLOR]', 'XBMC.RunPlugin(%s?mode=31&name=%s&url=%s&iconimage=%s&season=%s&episode=%s&originaltitle=%s&sources=%s&srt=%s)' % (sys.argv[0], name, url, iconimage,temporada,episodio,nomeSerie,urllib.quote_plus(str(sources)),urllib.quote_plus(srt))))
+        contextmen.append(('Download', 'XBMC.RunPlugin(%s?mode=31&name=%s&url=%s&iconimage=%s&season=%s&episode=%s&originaltitle=%s&sources=%s&srt=%s)' % (sys.argv[0], name, url, iconimage,temporada,episodio,nomeSerie,urllib.quote_plus(str(sources)),urllib.quote_plus(srt))))
     else: pass
     visto = check_visto(url,temporada,episodio)
     try:
@@ -2511,151 +2529,6 @@ def addDir_episodio(nomeSerie,title,description,url,temporada,episodio,sources,s
     liz.addContextMenuItems(contextmen, replaceItems=True)
     ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=False,totalItems=1)
     return ok
-
-############################### GOOGLE ANALYTICS XBMC by mickey ->http://www.xbmchub.com/forums/general-python-development/4747-%5Bdev-release%5D-final-google-analytics-your-plugin.html
-
-def parseDate(dateString):
-    try: return datetime.datetime.fromtimestamp(time.mktime(time.strptime(dateString.encode('utf-8', 'replace'), "%Y-%m-%d %H:%M:%S")))
-    except: return datetime.datetime.today() - datetime.timedelta(days = 1) #force update
-
-def checkGA():
-
-    secsInHour = 60 * 60
-    threshold  = 2 * secsInHour
-
-    now   = datetime.datetime.today()
-    prev  = parseDate(ADDON.getSetting('ga_time'))
-    delta = now - prev
-    nDays = delta.days
-    nSecs = delta.seconds
-
-    doUpdate = (nDays > 0) or (nSecs > threshold)
-    if not doUpdate: return
-
-    ADDON.setSetting('ga_time', str(now).split('.')[0])
-    APP_LAUNCH()
-
-def send_request_to_google_analytics(utm_url):
-    ua='Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'
-    import urllib2
-    try:
-        req = urllib2.Request(utm_url, None,
-                                    {'User-Agent':ua}
-                                     )
-        response = urllib2.urlopen(req).read()
-    except: print ("GA fail: %s" % utm_url)
-    return response
-
-def GA(group,name):
-    try:
-        try: from hashlib import md5
-        except: from md5 import md5
-        from random import randint
-        import time
-        from urllib import unquote, quote
-        from os import environ
-        from hashlib import sha1
-        VISITOR = ADDON.getSetting('ga_visitor')
-        utm_gif_location = "http://www.google-analytics.com/__utm.gif"
-        if not group=="None":
-            utm_track = utm_gif_location + "?" + \
-                "utmwv=" + VERSION + \
-                "&utmn=" + str(randint(0, 0x7fffffff)) + \
-                "&utmt=" + "event" + \
-                "&utme="+ quote("5("+PATH+"*"+group+"*"+name+")")+\
-                "&utmp=" + quote(PATH) + \
-                "&utmac=" + UATRACK + \
-                "&utmcc=__utma=%s" % ".".join(["1", VISITOR, VISITOR, VISITOR,VISITOR,"2"])
-            try:
-                print "============================ POSTING TRACK EVENT ============================"
-                send_request_to_google_analytics(utm_track)
-            except:
-                print "============================  CANNOT POST TRACK EVENT ============================"
-        if name=="None":
-            utm_url = utm_gif_location + "?" + \
-                "utmwv=" + VERSION + \
-                "&utmn=" + str(randint(0, 0x7fffffff)) + \
-                "&utmp=" + quote(PATH) + \
-                "&utmac=" + UATRACK + \
-                "&utmcc=__utma=%s" % ".".join(["1", VISITOR, VISITOR, VISITOR, VISITOR,"2"])
-        else:
-            if group=="None":
-               utm_url = utm_gif_location + "?" + \
-                    "utmwv=" + VERSION + \
-                    "&utmn=" + str(randint(0, 0x7fffffff)) + \
-                    "&utmp=" + quote(PATH+"/"+name) + \
-                    "&utmac=" + UATRACK + \
-                    "&utmcc=__utma=%s" % ".".join(["1", VISITOR, VISITOR, VISITOR, VISITOR,"2"])
-            else:
-               utm_url = utm_gif_location + "?" + \
-                    "utmwv=" + VERSION + \
-                    "&utmn=" + str(randint(0, 0x7fffffff)) + \
-                    "&utmp=" + quote(PATH+"/"+group+"/"+name) + \
-                    "&utmac=" + UATRACK + \
-                    "&utmcc=__utma=%s" % ".".join(["1", VISITOR, VISITOR, VISITOR, VISITOR,"2"])
-
-        print "============================ POSTING ANALYTICS ============================"
-        send_request_to_google_analytics(utm_url)
-
-    except: print "================  CANNOT POST TO ANALYTICS  ================"
-
-def APP_LAUNCH():
-    versionNumber = int(xbmc.getInfoLabel("System.BuildVersion" )[0:2])
-    if versionNumber < 12:
-        if xbmc.getCondVisibility('system.platform.osx'):
-            if xbmc.getCondVisibility('system.platform.atv2'): log_path = '/var/mobile/Library/Preferences'
-            else: log_path = os.path.join(os.path.expanduser('~'), 'Library/Logs')
-        elif xbmc.getCondVisibility('system.platform.ios'): log_path = '/var/mobile/Library/Preferences'
-        elif xbmc.getCondVisibility('system.platform.windows'):
-            log_path = xbmc.translatePath('special://home')
-            log = os.path.join(log_path, 'xbmc.log')
-            logfile = open(log, 'r').read()
-        elif xbmc.getCondVisibility('system.platform.linux'): log_path = xbmc.translatePath('special://home/temp')
-        else: log_path = xbmc.translatePath('special://logpath')
-        log = os.path.join(log_path, 'xbmc.log')
-        logfile = open(log, 'r').read()
-        match=re.compile('Starting XBMC \((.+?) Git:.+?Platform: (.+?)\. Built.+?').findall(logfile)
-    elif versionNumber > 11:
-        print '======================= more than ===================='
-        log_path = xbmc.translatePath('special://logpath')
-        log = os.path.join(log_path, 'xbmc.log')
-        logfile = open(log, 'r').read()
-        match=re.compile('Starting XBMC \((.+?) Git:.+?Platform: (.+?)\. Built.+?').findall(logfile)
-    else:
-        logfile='Starting XBMC (Unknown Git:.+?Platform: Unknown. Built.+?'
-        match=re.compile('Starting XBMC \((.+?) Git:.+?Platform: (.+?)\. Built.+?').findall(logfile)
-    print '==========================   '+PATH+' '+VERSION+'  =========================='
-    try: from hashlib import md5
-    except: from md5 import md5
-    from random import randint
-    import time
-    from urllib import unquote, quote
-    from os import environ
-    from hashlib import sha1
-    import platform
-    VISITOR = ADDON.getSetting('ga_visitor')
-    for build, PLATFORM in match:
-        if re.search('12',build[0:2],re.IGNORECASE): build="Frodo"
-        if re.search('11',build[0:2],re.IGNORECASE): build="Eden"
-        if re.search('13',build[0:2],re.IGNORECASE): build="Gotham"
-        if re.search('14',build[0:2],re.IGNORECASE): build="Helix"        
-        print build
-        print PLATFORM
-        utm_gif_location = "http://www.google-analytics.com/__utm.gif"
-        utm_track = utm_gif_location + "?" + \
-            "utmwv=" + VERSION + \
-            "&utmn=" + str(randint(0, 0x7fffffff)) + \
-            "&utmt=" + "event" + \
-            "&utme="+ quote("5(APP LAUNCH*"+build+"*"+PLATFORM+")")+\
-            "&utmp=" + quote(PATH) + \
-            "&utmac=" + UATRACK + \
-            "&utmcc=__utma=%s" % ".".join(["1", VISITOR, VISITOR, VISITOR,VISITOR,"2"])
-        try:
-            print "============================ POSTING APP LAUNCH TRACK EVENT ============================"
-            send_request_to_google_analytics(utm_track)
-        except: print "============================  CANNOT POST APP LAUNCH TRACK EVENT ============================"
-
-checkGA()
 
 ############################################################################################################
 #NAVEGAÇÃO												   #
@@ -2718,6 +2591,7 @@ try: year=urllib.unquote_plus(params["year"])
 except: pass
 
 print 'mode='+str(mode)
+print 'name='+str(name)
 print 'imdb_id='+str(imdb_id)
 print 'originaltitle='+str(originaltitle)
 print 'tipo='+str(tipo)
@@ -2763,10 +2637,10 @@ elif mode==22: remover_visto(url,season,episode)
 elif mode==23: play_video(name,url,iconimage,sources,srt,seriesName,season,episode)
 elif mode==24: reportar(url)
 elif mode==25: adicionar_seguir(url,name,iconimage)
-elif mode==26: listar_seguir()
+elif mode==26: listar_series_subseguir("seguir")
 elif mode==27: deixar_seguir(url)
 elif mode==28: proximo_episodio(url)
-elif mode==29: teste("S01E05","http://www.ratotv.net/movies/4633-iron-sky.html")
+elif mode==29: pass
 elif mode==30: estatisticas_trakt(url)
 elif mode==31: download_qualidade(url,name,iconimage)
 elif mode==32: season_episodes_dois(url,name,season,fanart)
@@ -2782,10 +2656,10 @@ elif mode==41: pesquisa_ano(url)
 elif mode==42: menu_ano()
 elif mode==43: subscrever_serie(name,url,iconimage)
 elif mode==44: play_from_outside(name,url)
-elif mode==45: listar_series_subscritas()
+elif mode==45: listar_series_subseguir("subscritas")
 elif mode==46: remover_subscricao_serie(name,url,iconimage)
-elif mode==47: transferir_biblioteca_filmes('novos')
+elif mode==47: transferir_biblioteca_filmes(name)
 elif mode==48: procurar_novas_series()
 elif mode==49: adicionar_filme_biblioteca(name,url,iconimage)
 
-if mode != 9: xbmcplugin.endOfDirectory(int(sys.argv[1]))
+xbmcplugin.endOfDirectory(int(sys.argv[1]))
