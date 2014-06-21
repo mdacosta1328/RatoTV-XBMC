@@ -272,16 +272,12 @@ def stream_qualidade(url,name,iconimage):
 			print titles,url_movie_file,subs
 			if selfAddon.getSetting('qualidade-auto') == "false":
 				choose=escolher_qualidade('Seleccione a qualidade',titles)
-				if choose > -1:
-						linkescolha=player_rato(url_movie_file[choose]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
-			else:
-				linkescolha=player_rato(url_movie_file[0]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
+				if choose > -1: linkescolha=player_rato(url_movie_file[choose]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
+			else: linkescolha=player_rato(url_movie_file[0]+ '|host=ratotv.com&referer=' + url,subs,name,url,iconimage,'',None,None)
 		else:
-			if rss_source:
-				hash_movie = re.compile('<location>ratotv*(.+?)</location>').findall(rss_source)[0].replace("*","")
+			if rss_source: hash_movie = re.compile('<location>ratotv*(.+?)</location>').findall(rss_source)[0].replace("*","")
 			else: ok=mensagemok('RatoTV','Não conseguiu obter a hash.')
-			try:
-				decoded_url = resolver_externos(hash_movie)
+			try: decoded_url = resolver_externos(hash_movie)
 			except: ok=mensagemok('RatoTV','Não conseguiu resolver a hash.')
 			try:
 					subs = re.compile('<captions.files>../(.+?)</captions.files>').findall(rss_source)
@@ -647,7 +643,7 @@ def rato_tv_get_media_info(html_trunk):
         	data_dict['Year'] = year
     match = re.compile('<strong>Atores: </strong>(.+?)</li>').findall(html_trunk)
     if match:
-        actor = match[0].replace(" ","").split(",")
+        actor = re.findall('<a href=.+?>(.*?)</a>', match[0], re.DOTALL)
         data_dict['Cast'] = actor
     match = re.compile('<strong>Gênero:</strong>(.+?)</li>').findall(html_trunk)
     if match:
