@@ -643,7 +643,7 @@ def rato_tv_get_media_info(html_trunk):
         	data_dict['Year'] = year
     match = re.compile('<strong>Atores: </strong>(.+?)</li>').findall(html_trunk)
     if match:
-        actor = match[0].replace(" ","").split(",")
+        actor = re.findall('<a href=.+?>(.*?)</a>', match[0], re.DOTALL)
         data_dict['Cast'] = actor
     match = re.compile('<strong>Gênero:</strong>(.+?)</li>').findall(html_trunk)
     if match:
