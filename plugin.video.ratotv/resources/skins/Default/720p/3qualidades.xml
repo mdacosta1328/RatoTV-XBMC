@@ -5,6 +5,8 @@
         <posy>235</posy>
     </coordinates>
     <visible>true</visible>
+    <allowoverlay>no</allowoverlay>
+    <zorder>1</zorder>
     <animation effect="fade" time="250">WindowOpen</animation>
     <animation effect="fade" time="250">WindowClose</animation>
 

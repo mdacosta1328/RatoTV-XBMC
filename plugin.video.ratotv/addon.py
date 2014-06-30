@@ -341,6 +341,8 @@ def player_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 	if infolabels: liz.setInfo( type="Video", infoLabels=infolabels )
 	liz.setProperty('mimetype', 'video/x-msvideo')
 	liz.setProperty('IsPlayable', 'true')
+	liz.setPath(path=video)
+	xbmcplugin.setResolvedUrl(int(sys.argv[1]),True,liz)
 	playlist.add(video,liz)
 	player = Player(url=url,season=season,episode=episode)
 	player.play(playlist)
@@ -2166,7 +2168,6 @@ def subscrever_serie(name,url,iconimage,daemon=False):
 
 def play_from_outside(name,url):
 	listitem = xbmcgui.ListItem(name, iconImage="iconimage", thumbnailImage="iconimage")
-	xbmcplugin.setResolvedUrl(int(sys.argv[1]),False,listitem)
 	try: html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: print "ERRO FALTA FAZER",sys.exit(0)
 	match = re.compile('<img src="/templates/ratotvv2/dleimages/comments-img2.png"/><a href="http://www.ratotv.net/(.+?)/">.+?</a>').findall(html_source)
