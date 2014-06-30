@@ -1,3 +1,19 @@
+2.0.0 (30/6/2014)
+-Separação das funções activas (play/download/etc) das funções passivas (obter data/obter informação de media/obter temporadas/obter links) - estilo Api
+-Função de prioridade de provedores (tks mafarricos)
+-Fix na seleccao automatica da melhor qualidade
+-Fix das funções de download
+-Integração completa com a biblioteca (subscrever series,adicionar filmes à biblioteca)
+-Adicionada função para transferir todos os filmes do site para a biblioteca (façam-no apenas de madrugada)
+-Criação de serviço para automaticamente adicionar novos episodios das series subscritas à biblioteca
+-Criação de serviço para transferir novos filmes do site para a biblioteca caso tenha transferido anteriormente todos os filmes
+-Remoção de todo e qualquer tipo de tracking pelo google analytics
+-Melhor controlo sobre a fanart
+-Uniformização de vistas para filmes/series (já não existem diferenças entre os diferentes menus. A metadata é guardada em cache localmente e apenas é transferida se não existir)
+-Bump addon.xml (topico do forum,source code,disclaimer)
+-Criados bookmarks (possível retomar a visualização se tiver sido interrompida anteriormente)
+-Novo tipo de repositório (o addon é agora distribuído em zip)
+
 1.1.5
 -2ª Fix coming soon 
 
