@@ -18,6 +18,7 @@
       <setting id="mensagem-pedidos" type="bool" label="Apresentar mensagem de instruções para pedidos" default="true"/>
       <setting id="sync-trakt" type="bool" label="Sincronizar trakt" default="false"/>
       <setting id="limpar-metadata" type="bool" label="Apagar conteudo pasta metadata" visible="false" default="true"/>
+      <setting id="track_player" type="bool" label="Manter registo do progresso da reprodução" visible="true" default="true"/>
    </category>
    <category label="Filmes">
       <setting label="[B][COLOR green]Definições para Filmes:[/B][/COLOR]" type="lsep" />

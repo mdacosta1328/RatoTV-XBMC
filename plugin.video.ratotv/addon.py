@@ -347,9 +347,10 @@ def player_rato(video,subs,name,url,iconimage,infolabels,season,episode):
 	player = Player(url=url,season=season,episode=episode)
 	player.play(playlist)
 	if subs and selfAddon.getSetting('subtitles-active')=='true': player.setSubtitles(urllib.quote(subs, safe=":/"));print 'meti legendas',subs
-	while player.playing:
-		xbmc.sleep(1000)
-		player.track_time()
+	if selfAddon.getSetting('track_player')=='true':
+		while player.playing:
+			xbmc.sleep(5000)
+			player.track_time()
 
 class Player(xbmc.Player):
     def __init__(self,url,season,episode):
@@ -360,7 +361,24 @@ class Player(xbmc.Player):
         self.playing = True
         self.time = 0
         self.totalTime = 0
-        print 'player criado'
+        if selfAddon.getSetting('track_player')=='true':
+        	try:
+        		self.id_rato = re.compile('.*/(.+?)-.+?html').findall(url)[0]
+        	except:
+        		self.id_rato = None
+        	if not xbmcvfs.exists(os.path.join(datapath,'trackplayer')): xbmcvfs.mkdir(os.path.join(datapath,'trackplayer'))
+        	if self.season and self.episode:
+        		self.tipo = 'tvshow'
+        		if self.id_rato:
+        			self.filemedia = os.path.join(datapath,'trackplayer',str(self.id_rato)+'S'+str(self.season)+'E'+str(self.episode)+'.txt')
+        		else:
+        			self.filemedia = None
+        	else:
+        		self.tipo = 'movie'
+        		if self.id_rato:
+        			self.filemedia = os.path.join(datapath,'trackplayer',str(self.id_rato)+'.txt')
+        		else:
+        			self.filemedia = None
 	print 'verificar definicao do trakt'
 	try:
 		addon_id_trakt = 'script.trakt'
@@ -374,6 +392,13 @@ class Player(xbmc.Player):
     def onPlayBackStarted(self):
         print 'player Start'
         self.totalTime = self.getTotalTime()
+        print 'total time',self.totalTime
+        if selfAddon.getSetting('track_player') == 'true':
+        	if xbmcvfs.exists(self.filemedia):
+        		print "Existe um bookmark de visualizacao anterior..."
+        		tracker=readfile(self.filemedia)
+        		opcao=xbmcgui.Dialog().yesno("RatoTv", 'Existe um registo de visualização anterior.','Continuar a partir de '+ ' %s?' % (format_time(float(tracker))),'', 'Não', 'Sim')
+        		if opcao: self.seekTime(float(tracker))
 
     def onPlayBackStopped(self):
         print 'player Stop'
@@ -386,6 +411,11 @@ class Player(xbmc.Player):
 			definition_trakt = readfile(os.path.join(datapath,'trakt.txt'))
 			xbmcaddon.Addon(id='script.trakt').setSetting('rate_movie',definition_trakt)
 		except: pass
+		if selfAddon.getSetting('track_player') == 'true':
+			try:
+				xbmcvfs.delete(self.filemedia)
+			except:
+				pass
 		if selfAddon.getSetting('votar-stopped')=='true':
 			try:
 				if season: pass
@@ -401,7 +431,10 @@ class Player(xbmc.Player):
         self.onPlayBackStopped()
 
     def track_time(self):
-        try: self.time = self.getTime()
+        try: 
+        	if selfAddon.getSetting('track_player')=='true':
+        		self.time = self.getTime()
+        		save(self.filemedia,str(self.time))
         except: pass
 
 
@@ -1010,6 +1043,15 @@ def readfile(filename):
 	f = open(filename, "r")
 	string = f.read()
 	return string
+	
+#format function by fightnight -tks!
+def format_time(seconds):
+	minutes,seconds = divmod(seconds, 60)
+	if minutes > 60:
+		hours,minutes = divmod(minutes, 60)
+		return "%02d:%02d:%02d" % (hours, minutes, seconds)
+	else:
+		return "%02d:%02d" % (minutes, seconds)
 
 def play_trailer(infolabels_trailer):
     print "url trailer é",infolabels_trailer
