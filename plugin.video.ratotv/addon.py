@@ -1946,7 +1946,9 @@ def handle_wait(time_to_wait,title,text,segunda=''):
 	    progresso.close()
             return True
 
-####Subscricoes
+###################################################################################################################
+#                                            SUBSCRICOES                                                          #
+###################################################################################################################
 
 def adicionar_filme_biblioteca(name,url,iconimage):
 	current_url = url
@@ -2162,15 +2164,14 @@ def subscrever_serie(name,url,iconimage,daemon=False):
 		if not daemon:
 			xbmc.executebuiltin("XBMC.Notification(RatoTv,Série subscrita com sucesso!,'10000',"+addonfolder+"/icon.png)")
 			xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
-			xbmc.executebuiltin("XBMC.Container.Refresh")	
-	else: print "falhou"
+	else: ok=mensagemok('RatoTV','Subscrição falhou!')
 	return
 
 
 def play_from_outside(name,url):
 	listitem = xbmcgui.ListItem(name, iconImage="iconimage", thumbnailImage="iconimage")
 	try: html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
-	except: print "ERRO FALTA FAZER",sys.exit(0)
+	except: ok=mensagemok('RatoTV','Não conseguiu abrir o site!'),sys.exit(0)
 	match = re.compile('<img src="/templates/ratotvv2/dleimages/comments-img2.png"/><a href="http://www.ratotv.net/(.+?)/">.+?</a>').findall(html_source)
 	if match[0] == 'tvshows':
 		proceed = False
@@ -2204,13 +2205,13 @@ def play_from_outside(name,url):
 					else: screenthumb = str(episodios_dict[str(int(episodio))]["thumbnail"])
 					if "srt" in episodios_dict[str(int(episodio))].keys(): episodios_opcao(str(episodios_dict[str(int(episodio))]["description"]),url,screenthumb,str(episodios_dict[str(int(episodio))]["source"]),str(episodios_dict[str(int(episodio))]["srt"]),originaltitle,temporada,episodio)
 					else: episodios_opcao(str(episodios_dict[str(int(episodio))]["description"]),url,screenthumb,str(episodios_dict[str(int(episodio))]["source"]),'',originaltitle,temporada,episodio)
-				else: print "nao encontrou o episodio. FALTA MOSTRAR ERRO"
+				else:  ok=mensagemok('RatoTV','Não encontrou o episódio')
 	if match[0] == 'movies':
 		print "Movie detectado"
         	html_source_trunk = re.findall('<div class="shortpost(.*?)Adicionar um comentário', html_source, re.DOTALL)
 		infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_source_trunk[0])
 		stream_qualidade(url,name,iconimage)
-	else: print "MENSAGEM DE ERRO FALTA"
+	else:  ok=mensagemok('RatoTV','Não conseguiu encontrar o filme!')
 
 def listar_temporadas_get_dictionary(name,url,fanart,iconimage,dicionario):
 	try:
