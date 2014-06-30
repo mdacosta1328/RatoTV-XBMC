@@ -658,7 +658,7 @@ def rato_tv_get_media_info(html_trunk):
         if match[0] == 'HD': HD = True
         elif match[0] == 'SD': HD = False
 	else: HD = match[0]
-    match = re.compile('<span class="favorite">.+?href="(.+?)"').findall(html_trunk)
+    match = re.compile('<a id="fav-id.+?" href="(.+?)"').findall(html_trunk)
     favorito = False
     if match:
         if 'doaction=del' in match[0]: favorito = True
