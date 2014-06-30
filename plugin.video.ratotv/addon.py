@@ -2074,6 +2074,7 @@ def transferir_biblioteca_filmes(name):
 		progresso.update(100,'Tarefa realizada com sucesso')
 		progresso.close()
 	if not canceled and i >= 1: xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
+	return
 
 def listar_series_subseguir(name):
 	if name == "subscritas":

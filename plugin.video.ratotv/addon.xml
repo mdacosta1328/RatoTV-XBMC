@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.ratotv" name="RatoTv" version="1.1.5" provider-name="Pedrock e enen92">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.t0mm0.common" version="1.1.0"/>
+    <import addon="plugin.video.youtube" version="2.9.2"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="addon.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.service" library="service.py" start="startup">
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <language>pt</language>
+    <platform>all</platform>
+    <summary lang="en">Rato TV</summary>
+    <description lang="en">Filmes e series no XBMC em HD. Visita o site oficial em http://www.ratotv.net. É necessária conta no site para aceder aos conteúdos do addon.</description>
+    <disclaimer lang="en">Os autores não alojam nem distribuem nenhum do conteúdo acessível a partir deste addon. Os autores não têm qualquer afiliação com o site em questão. O addon não contem nenhuma ferramenta de tracking.</disclaimer>
+    <forum>http://bit.ly/1iMZX7r</forum>
+    <source>https://github.com/enen92/RatoTV-XBMC</source>
+    <website>http://www.ratotv.net/</website>
+    <platform>all</platform>
+  </extension>
+</addon>

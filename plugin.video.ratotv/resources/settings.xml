@@ -35,14 +35,18 @@
       <setting id="libraryfolder" type="folder" label="Pasta da biblioteca" default=""/>
       <setting label="[B][COLOR green]Séries:[/B][/COLOR]" type="lsep" />
       <setting id="series-library" type="bool" label="Procurar novos episódios (service.py)" default="false"/>
+      <setting id="series-library-interval" type="enum" label="Intervalo de procura" values="2h|5h|10h|15h|24h" default="3" enable="!eq(-1,false)"/>
       <setting type="action" label="Procurar novos episódios agora" option="close" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=48&name=rato&url=ratotv.net)" />
       <setting label="[B][COLOR green]Filmes:[/B][/COLOR]" type="lsep" />
       <setting id="filmes-library" type="bool" label="Procurar novos filmes (service.py)" default="false"/>
+      <setting id="filmes-library-interval" type="enum" label="Intervalo de procura" values="2h|5h|10h|15h|24h" default="3" enable="!eq(-1,false)"/>
       <setting type="action" label="Transferir toda a biblioteca de filmes"  action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=47&name=todos&url=ratotv.net)" />
       <setting type="action" label="Procurar novos filmes agora" option="close" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=47&name=novos&url=ratotv.net)" />
       <setting label="[B][COLOR green]Gestão da biblioteca XBMC:[/B][/COLOR]" type="lsep" />
       <setting type="action" label="Actualizar biblioteca"  action="XBMC.UpdateLibrary(video)" />
       <setting type="action" label="'Limpar' a biblioteca" option="close" action="XBMC.CleanLibrary(video)" />
+      <setting id="series-last-update" type="text" default="1970-01-01 23:59:00.000000" visible="false"/>
+      <setting id="movies-last-update" type="text" default="1970-01-01 23:59:00.000000" visible="false"/>
    </category>
    <category label="Tipos de vista">
       <setting label="[B][COLOR green]Definições de vista:[/B][/COLOR]" type="lsep" />
