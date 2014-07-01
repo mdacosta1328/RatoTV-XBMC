@@ -2157,7 +2157,7 @@ def play_from_outside(name,url):
 					if "srt" in episodios_dict[str(int(episodio))].keys(): episodios_opcao(str(episodios_dict[str(int(episodio))]["description"]),url,screenthumb,str(episodios_dict[str(int(episodio))]["source"]),str(episodios_dict[str(int(episodio))]["srt"]),originaltitle,temporada,episodio)
 					else: episodios_opcao(str(episodios_dict[str(int(episodio))]["description"]),url,screenthumb,str(episodios_dict[str(int(episodio))]["source"]),'',originaltitle,temporada,episodio)
 				else:  ok=mensagemok('RatoTV','Não encontrou o episódio')
-	if match[0] == 'movies':
+	elif match[0] == 'movies':
 		html_source_trunk = re.findall('<div class="shortpost(.*?)Adicionar um comentário', html_source, re.DOTALL)
 		infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_source_trunk[0])
 		stream_qualidade(url,name,iconimage)

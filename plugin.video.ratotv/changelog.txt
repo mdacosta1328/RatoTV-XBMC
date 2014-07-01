@@ -1,3 +1,7 @@
+2.0.1 (1/7/2014)
+-Code cleanup (tks mafarricos)
+-Pequeno fix play_from_outside
+
 2.0.0 (30/6/2014)
 -Separação das funções activas (play/download/etc) das funções passivas (obter data/obter informação de media/obter temporadas/obter links) - estilo Api
 -Função de prioridade de provedores (tks mafarricos)
