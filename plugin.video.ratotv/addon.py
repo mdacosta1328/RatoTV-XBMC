@@ -2202,7 +2202,7 @@ def play_from_outside(name,url):
         	html_source_trunk = re.findall('<div class="shortpost(.*?)Adicionar um comentário', html_source, re.DOTALL)
 		infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_source_trunk[0])
 		stream_qualidade(url,name,iconimage)
-	else:  ok=mensagemok('RatoTV','Não conseguiu encontrar o filme!')
+	else:  print 'Log: ocorreu um erro ou o item não é um filme nem uma série'
 
 def listar_temporadas_get_dictionary(name,url,fanart,iconimage,dicionario):
 	try:
