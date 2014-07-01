@@ -54,6 +54,7 @@ def Menu_principal():
 		addDir_reg_menu('Favoritos','http://www.ratotv.net/favorites/page/1/',15,artfolder+'favoritos.jpg',True)
 		addDir_reg_menu('Séries subscritas',base_url + 'index.php?cstart=1&do=cat&category=tvshows',45,artfolder+'series.jpg',True)
 		addDir_reg_menu('Séries a seguir',base_url + 'index.php?cstart=1&do=cat&category=tvshows',26,artfolder+'series.jpg',True)
+		addDir_reg_menu('Tendências (Trakt)',base_url,50,artfolder+'favoritos.jpg',True)
 		addDir_reg_menu('Géneros','url',5,artfolder+'categorias.jpg',True)
 		addDir_reg_menu('Ano','url',42,artfolder+'pesquisa.jpg',True)
 		addDir_reg_menu('Definições','url',9,artfolder+'definicoes.jpg',True)
@@ -66,6 +67,10 @@ def Menu_principal():
 		addDir_reg_menu('Alterar Definições','url',9,artfolder+'definicoes.jpg',False)
 		addDir_reg_menu('Tentar Novamente','url',None,artfolder+'refresh.jpg',True)
 		menu_view()
+		
+def trending_menu_trakt():
+	addDir_reg_menu('Tendência de Filmes',base_url,51,artfolder+'favoritos.jpg',True)
+	addDir_reg_menu('Tendência de Séries',base_url,52,artfolder+'favoritos.jpg',True)
 
 def Menu_principal_series():
     addDir_reg_menu('Todas as séries',base_url + 'index.php?cstart=1&do=cat&category=tvshows',2,artfolder+'series.jpg',True)
@@ -556,7 +561,7 @@ def listar_media(url,mode):
         except:pass
     moviesandseries_view()
 
-def listar_pesquisa(url):
+def listar_pesquisa(url,retorna=False):
 	URLpesquisa = urllib.unquote(url)
 	encode = True
 	try:
@@ -592,10 +597,15 @@ def listar_pesquisa(url):
 			if int(pag_seguinte) > int(current_page[0]): addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas + ') | Próxima >>>[/COLOR]',pagina_seguinte,16,artfolder+'seta.jpg',True)
 			else:pass
 		except: pass
-		moviesandseries_view()
+		if not retorna:
+			moviesandseries_view()
+		else:
+			return
 	else:
-		ok=mensagemok('RatoTV','Não existem resultados.')
-		sys.exit(0)
+		if not retorna:
+			ok=mensagemok('RatoTV','Não existem resultados.')
+			sys.exit(0)
+		else: return
 
 def rato_tv_get_media_info(html_trunk):
     print "get media info"
@@ -1090,6 +1100,35 @@ def mensagem_site(html_source):
 	from random import randint
 	randomvalue = randint(0,len(match)-1)
 	return mensagemok('RatoTV',match[randomvalue])
+	
+def filmes_trending():
+	movies_trend = trakt_api().get_trending_movies()
+	progresso.create('RatoTv', 'A procurar trending do trakt no RatoTV...','')
+	total_items = len(movies_trend)
+	i=0
+	for title,year,imdb_id in movies_trend:
+		i +=1
+		url_pesquisa = base_url + '?do=search&subaction=search&search_start=1&story=' + str(imdb_id)
+		listar_pesquisa(urllib.quote_plus(url_pesquisa),True)
+		progresso.update(int(((i))/(total_items)*100),'A procurar trending do trakt no RatoTV...',title + ' (' + year + ')' )
+	progresso.update(100,"Terminado!")
+	progresso.close()
+	moviesandseries_view()
+	
+def series_trending():
+	shows_trend = trakt_api().get_trending_shows()
+	progresso.create('RatoTv', 'A procurar trending do trakt no RatoTV...','')
+	total_items = len(shows_trend)
+	i=0
+	for title,year,imdb_id in shows_trend:
+		i +=1
+		url_pesquisa = base_url + '?do=search&subaction=search&search_start=1&story=' + str(imdb_id)
+		listar_pesquisa(urllib.quote_plus(url_pesquisa),True)
+		progresso.update(int(((i))/(total_items)*100),'A procurar trending do trakt no RatoTV...',title + ' (' + year + ')' )
+	progresso.update(100,"Terminado!")
+	progresso.close()
+	moviesandseries_view()
+	
 
 def get_last_sep(url):
 	try: html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
@@ -1680,63 +1719,100 @@ def check_visto(url,season=None,episode=None):
 
 #Trakt.tv
 class trakt_api:
-    api_key = '353f223c2afc3c2050fcb810810fdb49'
-    def next_episode(self,tvdbid):
-        url_api = 'http://api.trakt.tv/show/summary.json/' + self.api_key + '/' + tvdbid + '/extended'
-        try: data = json_get(url_api)
-        except: data = ''
-        return data
+	api_key = '353f223c2afc3c2050fcb810810fdb49'
+	def next_episode(self,tvdbid):
+		url_api = 'http://api.trakt.tv/show/summary.json/' + self.api_key + '/' + tvdbid + '/extended'
+		try: data = json_get(url_api)
+		except: data = ''
+		return data
 
-    def search_movie(self,query):
-        url_api = 'http://api.trakt.tv/search/movies.json/'+ self.api_key + '?query='+str(query)
-        try: data = json_get(url_api)
-        except: data = ''
-        return data
+	def search_movie(self,query):
+		url_api = 'http://api.trakt.tv/search/movies.json/'+ self.api_key + '?query='+str(query)
+		try: data = json_get(url_api)
+		except: data = ''
+		return data
 
-    def search_show(self,query):
-        url_api = 'http://api.trakt.tv/search/shows.json/'+ self.api_key + '?query='+str(query)
-        try: data = json_get(url_api)
-        except: data = ''
-        return data
+	def search_show(self,query):
+		url_api = 'http://api.trakt.tv/search/shows.json/'+ self.api_key + '?query='+str(query)
+		try: data = json_get(url_api)
+		except: data = ''
+		return data
 
-    def return_watched_movies(self,query):
-        url_api = 'http://api.trakt.tv/user/library/movies/watched.json/'+ self.api_key +'/' + str(query)
-        try: data = json_get(url_api)
-        except: data = ''
-        return data
+	def return_watched_movies(self,query):
+		url_api = 'http://api.trakt.tv/user/library/movies/watched.json/'+ self.api_key +'/' + str(query)
+		try: data = json_get(url_api)
+		except: data = ''
+		return data
 
-    def return_watched_shows(self,query):
-        url_api = 'http://api.trakt.tv/user/library/shows/watched.json/'+ self.api_key +'/' + str(query)
-        try: data = json_get(url_api)
-        except: data = ''
-        return data
+	def return_watched_shows(self,query):
+		url_api = 'http://api.trakt.tv/user/library/shows/watched.json/'+ self.api_key +'/' + str(query)
+		try: data = json_get(url_api)
+		except: data = ''
+		return data
 
-    def movie_unwatched(self,coiso):
-        data ={ "username": "username","password": "sha1hash","movies": [{"imdb_id": "tt0114746","title": "Twelve Monkeys","year": 1995}]}
+	def shows_seasons(self,tvdbid):
+		url_api = 'http://api.trakt.tv/show/seasons.json/'+ self.api_key +'/' + str(tvdbid)
+		try: data = json_get(url_api)
+		except: data = ''
+		return data
 
-    def shows_seasons(self,tvdbid):
-	url_api = 'http://api.trakt.tv/show/seasons.json/'+ self.api_key +'/' + str(tvdbid)
-        try: data = json_get(url_api)
-        except: data = ''
-        return data
-
-    def shows_season(self,tvdbid,season):
-	url_api = 'http://api.trakt.tv/show/season.json/'+ self.api_key +'/' + str(tvdbid) + '/' + str(season)
-        try: data = json_get(url_api)
-        except: data = ''
-        return data
-
-    def get_showepisode_thumb(self,originaltitle,year,season,episode):
-	screen = ''
-	id_tvdb = thetvdb_api()._id(originaltitle,int(year))
-	json_code = self.shows_season(id_tvdb,int(season))
-	for entry in json_code:
-		if int(entry['episode']) == int(episode):
-			try: screen = entry['screen']
-			except: pass
-			break
-	return screen
+	def shows_season(self,tvdbid,season):
+		url_api = 'http://api.trakt.tv/show/season.json/'+ self.api_key +'/' + str(tvdbid) + '/' + str(season)
+		try: data = json_get(url_api)
+		except: data = ''
+		return data
+    
+	def get_showepisode_thumb(self,originaltitle,year,season,episode):
+		screen = ''
+		id_tvdb = thetvdb_api()._id(originaltitle,int(year))
+		json_code = self.shows_season(id_tvdb,int(season))
+		for entry in json_code:
+			if int(entry['episode']) == int(episode):
+				try: screen = entry['screen']
+				except: pass
+				break
+		return screen
+		
+    	#returns a list  [(name,year,imdb_id),....] for all trakt trending movies
+	def get_trending_movies(self):
+		url_api = 'http://api.trakt.tv/movies/trending.json/'+ self.api_key 
+		try: data = json_get(url_api)
+		except: data = ''
+		if data:
+			print "coiso",len(data)
+			movie_trend = []
+			#Listar apenas os primeiros 40 para evitar ddos
+			for movie_dict in data[0:40]:
+				try:
+					title = str(movie_dict["title"])
+					year = str(movie_dict["year"])
+					imdbid = str(movie_dict["imdb_id"])
+					movie_trend.append((title,year,imdbid))
+				except: pass
+			return movie_trend
+			
+    	#returns a list  [(name,year,imdb_id),....] for all trakt trending movies
+	def get_trending_shows(self):
+		url_api = 'http://api.trakt.tv/shows/trending.json/'+ self.api_key 
+		try: data = json_get(url_api)
+		except: data = ''
+		if data:
+			print "coiso",len(data)
+			movie_trend = []
+			#Listar apenas os primeiros 40 para evitar ddos
+			for movie_dict in data[0:40]:
+				try:
+					title = str(movie_dict["title"])
+					year = str(movie_dict["year"])
+					imdbid = str(movie_dict["imdb_id"])
+					movie_trend.append((title,year,imdbid))
+				except: pass
+			return movie_trend
 	
+
+				
+		
+		
 #THEMOVIEDB
 
 class themoviedb_api:
@@ -2595,5 +2671,8 @@ elif mode==46: remover_subscricao_serie(name,url,iconimage)
 elif mode==47: transferir_biblioteca_filmes(name)
 elif mode==48: procurar_novas_series()
 elif mode==49: adicionar_filme_biblioteca(name,url,iconimage)
+elif mode==50: trending_menu_trakt()
+elif mode==51: filmes_trending()
+elif mode==52: series_trending()
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))
