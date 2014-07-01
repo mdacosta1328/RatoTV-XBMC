@@ -61,7 +61,7 @@ def Menu_principal():
 		mensagens_conta()
 		#if selfAddon.getSetting(setting_limpar_metadata) == "true": limpar_pasta_metadata()
 		menu_view()
-	if selfAddon.getSetting('novos-episodios') == "true": verificar_novos()
+		if selfAddon.getSetting('novos-episodios') == "true": verificar_novos()
 	else:
 		addDir_reg_menu('Alterar Definições','url',9,artfolder+'definicoes.jpg',False)
 		addDir_reg_menu('Tentar Novamente','url',None,artfolder+'refresh.jpg',True)
