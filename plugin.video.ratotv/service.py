@@ -13,7 +13,8 @@ class service:
 					update = abs(t2 - t1) > datetime.timedelta(hours=hoursList[interval])
 					if update is False: raise Exception()
 					if not (xbmc.Player().isPlaying() or xbmc.getCondVisibility('Library.IsScanningVideo')):
-						xbmc.executebuiltin('RunPlugin(plugin://plugin.video.ratotv/?mode=48&name=rato&url=ratotv.net)')
+						if xbmcaddon.Addon().getSetting("series-watchlist") == 'true': xbmc.executebuiltin('RunPlugin(plugin://plugin.video.ratotv/?mode=54&name=actualizarlib&url=ratotv.net)')
+						xbmc.executebuiltin('RunPlugin(plugin://plugin.video.ratotv/?mode=48&name=service&url=ratotv.net)')
 						xbmcaddon.Addon().setSetting("series-last-update", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
 				except:
 					pass
@@ -26,10 +27,19 @@ class service:
 					update = abs(t2 - t1) > datetime.timedelta(hours=hoursList[interval])
 					if update is False: raise Exception()
 					if not (xbmc.Player().isPlaying() or xbmc.getCondVisibility('Library.IsScanningVideo')):
-						xbmc.executebuiltin('RunPlugin(plugin://plugin.video.ratotv/?mode=47&name=novos&url=ratotv.net)')
-						xbmcaddon.Addon().setSetting('movies-last-update', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
+						actualizou_filmes = False
+						if xbmcaddon.Addon().getSetting("filmes-watchlist") == 'true': 
+							xbmc.executebuiltin('RunPlugin(plugin://plugin.video.ratotv/?mode=53&name=ratotv&url=ratotv.net)')
+							actualizou_filmes = True
+						if xbmcaddon.Addon().getSetting("filmes-service") == '0' or xbmcaddon.Addon().getSetting("filmes-service") == '1':
+							xbmc.executebuiltin('RunPlugin(plugin://plugin.video.ratotv/?mode=47&name=novos&url=ratotv.net)')
+							actualizou_filmes = True
+						elif xbmcaddon.Addon().getSetting("filmes-service") == '2': xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
+						else: actualizou_filmes = False
+						if actualizou_filmes:
+							xbmcaddon.Addon().setSetting('movies-last-update', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
 				except:
 					pass
-			xbmc.sleep(1000)
+			xbmc.sleep(10000)
 
 service()

@@ -57,7 +57,7 @@ def Menu_principal():
 		addDir_reg_menu('Tendências (Trakt)',base_url,50,artfolder+'favoritos.jpg',True)
 		addDir_reg_menu('Géneros','url',5,artfolder+'categorias.jpg',True)
 		addDir_reg_menu('Ano','url',42,artfolder+'pesquisa.jpg',True)
-		addDir_reg_menu('Definições','url',9,artfolder+'definicoes.jpg',True)
+		addDir_reg_menu('Definições','url',9,artfolder+'definicoes.jpg',False)
 		addDir_reg_menu('','','',addonfolder+'logo.png',False)
 		mensagens_conta()
 		#if selfAddon.getSetting(setting_limpar_metadata) == "true": limpar_pasta_metadata()
@@ -560,8 +560,12 @@ def listar_media(url,mode):
         try: addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas[0][0]+ ') | Próxima >>>[/COLOR]',pag_seguinte[0].replace('amp;',''),mode,artfolder+'seta.jpg',True)
         except:pass
     moviesandseries_view()
+    
+    
+#Esta função serve para listar a pesquisa ou para devolver o url de uma determinada série/filme passado o imdb_id. retorna=False -> adiciona os filmes e fica parado, retorna = True  -> adiciona os filmes e retorna à função anterior; retorna = "values" -> retorna à funcao anterior o url do filme/serie no site do rato
 
 def listar_pesquisa(url,retorna=False):
+	resultado_pesquisa = ''
 	URLpesquisa = urllib.unquote(url)
 	encode = True
 	try:
@@ -586,26 +590,33 @@ def listar_pesquisa(url,retorna=False):
 		for html_trunk in html_source_trunk:
 			try:
 				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_trunk)
-				if filme_ou_serie == 'movie': addDir_filme(name + ' ('+str(infolabels['Year'])+')',url,3,iconimage,infolabels,fanart,totalit,False,'movie',HD,favorito)
-				elif filme_ou_serie == 'tvshow': addDir_filme(name + ' ('+str(infolabels['Year'])+')',url,10,iconimage,infolabels,fanart,totalit,True,'tvshow',HD,favorito)
+				if filme_ou_serie == 'movie':
+					if retorna != "values": addDir_filme(name + ' ('+str(infolabels['Year'])+')',url,3,iconimage,infolabels,fanart,totalit,False,'movie',HD,favorito)
+					else: resultado_pesquisa = url
+				elif filme_ou_serie == 'tvshow': 
+					if retorna != "values": addDir_filme(name + ' ('+str(infolabels['Year'])+')',url,10,iconimage,infolabels,fanart,totalit,True,'tvshow',HD,favorito)
+					else: resultado_pesquisa = url
 			except:pass
-		try:
-			total_paginas = max(paginas)
-			pag_seguinte = paginas[-1]
-			if encode: pagina_seguinte = re.sub('search_start=[0-9]+','search_start='+pag_seguinte[0],URLpesquisa).replace('amp;','')
-			else: pagina_seguinte = URLpesquisa.replace('/'+current_page[0]+'/','/' + str(int(current_page[0])+1)+'/')
-			if int(pag_seguinte) > int(current_page[0]): addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas + ') | Próxima >>>[/COLOR]',pagina_seguinte,16,artfolder+'seta.jpg',True)
-			else:pass
-		except: pass
 		if not retorna:
+			try:
+				total_paginas = max(paginas)
+				pag_seguinte = paginas[-1]
+				if encode: pagina_seguinte = re.sub('search_start=[0-9]+','search_start='+pag_seguinte[0],URLpesquisa).replace('amp;','')
+				else: pagina_seguinte = URLpesquisa.replace('/'+current_page[0]+'/','/' + str(int(current_page[0])+1)+'/')
+				if int(pag_seguinte) > int(current_page[0]): addDir_reg_menu('[COLOR green]Pag (' + current_page[0] + '/' + total_paginas + ') | Próxima >>>[/COLOR]',pagina_seguinte,16,artfolder+'seta.jpg',True)
+				else:pass
+			except: pass
 			moviesandseries_view()
 		else:
-			return
+			if retorna == "values": return resultado_pesquisa
+			else:return
 	else:
 		if not retorna:
 			ok=mensagemok('RatoTV','Não existem resultados.')
 			sys.exit(0)
-		else: return
+		else: 
+			if retorna == "values": return ''
+			else: return
 
 def rato_tv_get_media_info(html_trunk):
     print "get media info"
@@ -1093,13 +1104,25 @@ def reportar(url):
 							return mensagemok('RatoTV','Problema reportado com sucesso.')
 						except: return mensagemok('RatoTV','Ocorreu um problema.')
 
-def mensagem_site(html_source):
-    try: match = re.compile("'(.+?)'").findall(html_source)
-    except: match = []
-    if match != [] and selfAddon.getSetting('mensagem-site') == "true":
-	from random import randint
-	randomvalue = randint(0,len(match)-1)
-	return mensagemok('RatoTV',match[randomvalue])
+def filmes_watchlist(name):
+	movies_watch = trakt_api().get_movie_watchlist()
+	if movies_watch:
+		for title,year,imdb_id in movies_watch:
+			url_pesquisa = base_url + '?do=search&subaction=search&search_start=1&story=' + str(imdb_id)
+			url_rato = listar_pesquisa(urllib.quote_plus(url_pesquisa),'values')
+			if url_rato: adicionar_filme_biblioteca(title,url_rato,'',False)
+		if name == 'actualizarlib': xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
+	return
+	
+def series_watchlist(name):
+	series_watch = trakt_api().get_series_watchlist()
+	if series_watch:
+		for title,year,imdb_id in series_watch:
+			url_pesquisa = base_url + '?do=search&subaction=search&search_start=1&story=' + str(imdb_id)
+			url_rato = listar_pesquisa(urllib.quote_plus(url_pesquisa),'values')
+			if url_rato: subscrever_serie(title,url_rato,'',daemon=True)
+	if name == 'actualizarlib': xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
+	return
 	
 def filmes_trending():
 	movies_trend = trakt_api().get_trending_movies()
@@ -1779,7 +1802,6 @@ class trakt_api:
 		try: data = json_get(url_api)
 		except: data = ''
 		if data:
-			print "coiso",len(data)
 			movie_trend = []
 			#Listar apenas os primeiros 40 para evitar ddos
 			for movie_dict in data[0:40]:
@@ -1791,13 +1813,12 @@ class trakt_api:
 				except: pass
 			return movie_trend
 			
-    	#returns a list  [(name,year,imdb_id),....] for all trakt trending movies
+    	#returns a list  [(name,year,imdb_id),....] for all trakt trending shows
 	def get_trending_shows(self):
 		url_api = 'http://api.trakt.tv/shows/trending.json/'+ self.api_key 
 		try: data = json_get(url_api)
 		except: data = ''
 		if data:
-			print "coiso",len(data)
 			movie_trend = []
 			#Listar apenas os primeiros 40 para evitar ddos
 			for movie_dict in data[0:40]:
@@ -1808,6 +1829,38 @@ class trakt_api:
 					movie_trend.append((title,year,imdbid))
 				except: pass
 			return movie_trend
+			
+    	#returns a list  [(name,year,imdb_id),....] for all trakt user movie watchlist
+	def get_movie_watchlist(self):
+		url_api = 'http://api.trakt.tv/user/watchlist/movies.json/' + self.api_key +'/' + selfAddon.getSetting('trakt_login')
+		try: data = json_get(url_api)
+		except: data = ''
+		if data:
+			movie_watchlist = []
+			for movie_dict in data:
+				try:
+					title = str(movie_dict["title"])
+					year = str(movie_dict["year"])
+					imdbid = str(movie_dict["imdb_id"])
+					movie_watchlist.append((title,year,imdbid))
+				except: pass
+			return movie_watchlist
+			
+    	#returns a list  [(name,year,imdb_id),....] for all trakt user show watchlist
+	def get_series_watchlist(self):
+		url_api = 'http://api.trakt.tv/user/watchlist/shows.json/' + self.api_key +'/' + selfAddon.getSetting('trakt_login')
+		try: data = json_get(url_api)
+		except: data = ''
+		if data:
+			shows_watchlist = []
+			for show_dict in data:
+				try:
+					title = str(show_dict["title"])
+					year = str(show_dict["year"])
+					imdbid = str(show_dict["imdb_id"])
+					shows_watchlist.append((title,year,imdbid))
+				except: pass
+			return shows_watchlist
 	
 
 				
@@ -1982,7 +2035,7 @@ def handle_wait(time_to_wait,title,text,segunda=''):
 #                                            SUBSCRICOES                                                          #
 ###################################################################################################################
 
-def adicionar_filme_biblioteca(name,url,iconimage):
+def adicionar_filme_biblioteca(name,url,iconimage,updatelibrary=True):
 	current_url = url
 	if selfAddon.getSetting('libraryfolder'): pass
 	else:
@@ -2005,10 +2058,12 @@ def adicionar_filme_biblioteca(name,url,iconimage):
 			movie_biblioteca_file = os.path.join(movie_folder,urllib.quote_plus(infolabels['originaltitle'])+'.strm')
 			save(movie_biblioteca_file,strm_contents)
 			save(movie_database_file,"check")
-			xbmc.executebuiltin("XBMC.Notification(RatoTv,Filme adicionado à biblioteca!,'10000',"+addonfolder+"/icon.png)")
-			xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
+			if updatelibrary:
+				xbmc.executebuiltin("XBMC.Notification(RatoTv,Filme adicionado à biblioteca!,'10000',"+addonfolder+"/icon.png)")
+				xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
+			else: return
 
-def procurar_novas_series():
+def procurar_novas_series(name):
 	cancelar = False
 	pasta_series_subscritas = os.path.join(datapath,'tvshows-subscriptions')
 	if not xbmcvfs.exists(pasta_series_subscritas): cancelar = True
@@ -2016,15 +2071,17 @@ def procurar_novas_series():
 		dirs, files = xbmcvfs.listdir(pasta_series_subscritas)
 		if not files: cancelar = True
 	if cancelar:
-		ok=mensagemok('RatoTV','Não tem séries subscritas','Subscreva novas séries ou desactive a procura de novas séries!')
-		sys.exit(0)
+		if name == "service": return
+		else:
+			ok=mensagemok('RatoTV','Não tem séries subscritas','Subscreva novas séries ou desactive a procura de novas séries!')
+			sys.exit(0)
 	else:
 		for serie_txt in files:
 			serie_file = os.path.join(pasta_series_subscritas,serie_txt)
 			serie_file_data = readfile(serie_file)
 			name,url,iconimage = serie_file_data.split('|')
 			subscrever_serie(name,url,iconimage,True)
-	xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
+		xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
 	return
 			
 
@@ -2191,7 +2248,7 @@ def subscrever_serie(name,url,iconimage,daemon=False):
 		if not daemon:
 			xbmc.executebuiltin("XBMC.Notification(RatoTv,Série subscrita com sucesso!,'10000',"+addonfolder+"/icon.png)")
 			xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
-	else: ok=mensagemok('RatoTV','Subscrição falhou!')
+	else: ok=mensagemok('RatoTV','Subscrição falhou!','Defina uma pasta de subscrições nas definições...')
 	return
 
 
@@ -2669,10 +2726,12 @@ elif mode==44: play_from_outside(name,url)
 elif mode==45: listar_series_subseguir("subscritas")
 elif mode==46: remover_subscricao_serie(name,url,iconimage)
 elif mode==47: transferir_biblioteca_filmes(name)
-elif mode==48: procurar_novas_series()
+elif mode==48: procurar_novas_series(name)
 elif mode==49: adicionar_filme_biblioteca(name,url,iconimage)
 elif mode==50: trending_menu_trakt()
 elif mode==51: filmes_trending()
 elif mode==52: series_trending()
+elif mode==53: filmes_watchlist(name)
+elif mode==54: series_watchlist(name)
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))
