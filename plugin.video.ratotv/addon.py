@@ -48,15 +48,14 @@ def Menu_principal():
 	if login_sucessful == True:
 		addDir_reg_menu('Filmes','url',1,artfolder+'filmes.jpg',True)
 		addDir_reg_menu('Séries',base_url,8,artfolder+'series.jpg',True)
-		addDir_reg_menu('Pedidos',"http://www.ratotv.net/requests/page/1/",33,artfolder+'contactar.jpg',True)
 		addDir_reg_menu('Pesquisar','url',4,artfolder+'pesquisa.jpg',True)
 		addDir_reg_menu('','','',addonfolder+'logo.png',False)
 		addDir_reg_menu('Favoritos','http://www.ratotv.net/favorites/page/1/',15,artfolder+'favoritos.jpg',True)
-		addDir_reg_menu('Séries subscritas',base_url + 'index.php?cstart=1&do=cat&category=tvshows',45,artfolder+'series.jpg',True)
 		addDir_reg_menu('Séries a seguir',base_url + 'index.php?cstart=1&do=cat&category=tvshows',26,artfolder+'series.jpg',True)
 		addDir_reg_menu('Tendências (Trakt)',base_url,50,artfolder+'favoritos.jpg',True)
 		addDir_reg_menu('Géneros','url',5,artfolder+'categorias.jpg',True)
 		addDir_reg_menu('Ano','url',42,artfolder+'pesquisa.jpg',True)
+		addDir_reg_menu('Pedidos',"http://www.ratotv.net/requests/page/1/",33,artfolder+'contactar.jpg',True)
 		addDir_reg_menu('Definições','url',9,artfolder+'definicoes.jpg',False)
 		addDir_reg_menu('','','',addonfolder+'logo.png',False)
 		mensagens_conta()
@@ -74,12 +73,13 @@ def trending_menu_trakt():
 
 def Menu_principal_series():
     addDir_reg_menu('Todas as séries',base_url + 'index.php?cstart=1&do=cat&category=tvshows',2,artfolder+'series.jpg',True)
-    addDir_reg_menu('Séries a seguir',base_url + 'index.php?cstart=1&do=cat&category=tvshows',26,artfolder+'series.jpg',True)
-    addDir_reg_menu('Séries subscritas',base_url + 'index.php?cstart=1&do=cat&category=tvshows',45,artfolder+'series.jpg',True)
     addDir_reg_menu('Séries mais recentes',base_url,6,artfolder+'series-mais.jpg',True)
     addDir_reg_menu('Séries mais populares',base_url,6,artfolder+'series-mais.jpg',True)
     addDir_reg_menu('Séries mais vistas',base_url,6,artfolder+'series-mais.jpg',True)
     addDir_reg_menu('Séries mais votadas',base_url,6,artfolder+'series-mais.jpg',True)
+    addDir_reg_menu('','','',addonfolder+'logo.png',False)
+    addDir_reg_menu('Séries a seguir',base_url + 'index.php?cstart=1&do=cat&category=tvshows',26,artfolder+'series.jpg',True)
+    addDir_reg_menu('Séries subscritas',base_url + 'index.php?cstart=1&do=cat&category=tvshows',45,artfolder+'series.jpg',True)
     menu_view()
 
 def Menu_principal_filmes():
@@ -666,7 +666,7 @@ def rato_tv_get_media_info(html_trunk):
     if match: data_dict['Year'] = match[0][2]
     else:
     	match = re.compile('<strong>Ano: </strong>(.+?)</li>').findall(html_trunk)
-    	for year in match: data_dict['Year'] = year
+    	for year in match: data_dict['Year'] = year.replace('-','')
     match = re.compile('<strong>Atores: </strong>(.+?)</li>').findall(html_trunk)
     if match:
         actor = re.findall('<a href=.+?>(.*?)</a>', match[0], re.DOTALL)
