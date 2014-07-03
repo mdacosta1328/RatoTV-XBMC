@@ -1,3 +1,12 @@
+2.0.2 (3/7/2014)
+-Corrigida actualizacao de biblioteca no service.py
+-Adicionada opcao para transferir coleccao do trakt para a biblioteca
+-Coreccao votos
+-Adicionada opcao para transferir watchlist do trakt para o xbmc (e tambem atraves do service.py)
+-Adicionada entrada de menu para verificar que trending media do trakt esta disponivel no rato
+-Reorganizaçao do menu principal
+-Outros bug fixes
+
 2.0.1 (1/7/2014)
 -Code cleanup (tks mafarricos)
 -Pequeno fix play_from_outside
