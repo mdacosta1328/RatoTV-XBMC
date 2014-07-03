@@ -1355,7 +1355,7 @@ class qualidades_duas(xbmcgui.WindowXMLDialog):
 
     def onAction(self, action):
 	#print action.getId() #importante para saber que acção estou a fazer
-    	if action.getId() == 92: self.close()
+    	if action.getId() == 92: self.close(); save(datapath + "option.txt","10")
 
     def onClick(self, controlID):
         if controlID == 50000: self.close(); save(datapath + "option.txt","10")
@@ -1422,7 +1422,7 @@ class qualidades(xbmcgui.WindowXMLDialog):
         self.setFocus(self.getControl(11030))
 
     def onAction(self, action):
-    	if action.getId() == 92: self.close()
+    	if action.getId() == 92: self.close(); save(datapath + "option.txt","10")
 
     def onClick(self, controlID):
         if controlID == 50000: self.close(); save(datapath + "option.txt","10")
