@@ -1115,6 +1115,23 @@ def filmes_watchlist(name):
 		if name == 'actualizarlib': xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
 	return
 	
+def filmes_collection_trakt(name):
+	movies_watch = trakt_api().get_movie_colection()
+	if movies_watch:
+		total_items = len(movies_watch)
+		i=0
+		progresso.create('RatoTv', 'A procurar filmes da colecção no Trakt...','')
+		for title,year,imdb_id in movies_watch:
+			i +=1
+			url_pesquisa = base_url + '?do=search&subaction=search&search_start=1&story=' + str(imdb_id)
+			url_rato = listar_pesquisa(urllib.quote_plus(url_pesquisa),'values')
+			if url_rato: adicionar_filme_biblioteca(title,url_rato,'',False)
+			progresso.update(int(((i))/(total_items)*100),'A procurar filme do trakt no RatoTV...',title + ' (' + year + ')' )
+		progresso.update(100,"Terminado!")
+		progresso.close()
+		xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
+	return
+	
 def series_watchlist(name):
 	series_watch = trakt_api().get_series_watchlist()
 	if series_watch:
@@ -1123,6 +1140,23 @@ def series_watchlist(name):
 			url_rato = listar_pesquisa(urllib.quote_plus(url_pesquisa),'values')
 			if url_rato: subscrever_serie(title,url_rato,'',daemon=True)
 	if name == 'actualizarlib': xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
+	return
+	
+def series_collection_trakt(name):
+	movies_watch = trakt_api().get_shows_colection()
+	if movies_watch:
+		total_items = len(movies_watch)
+		i=0
+		progresso.create('RatoTv', 'A procurar series da colecção no Trakt...','')
+		for title,year,imdb_id in movies_watch:
+			i +=1
+			url_pesquisa = base_url + '?do=search&subaction=search&search_start=1&story=' + str(imdb_id)
+			url_rato = listar_pesquisa(urllib.quote_plus(url_pesquisa),'values')
+			if url_rato: subscrever_serie(title,url_rato,'',daemon=True)
+			progresso.update(int(((i))/(total_items)*100),'A procurar serie do trakt no RatoTV...',title + ' (' + year + ')' )
+		progresso.update(100,"Terminado!")
+		progresso.close()
+		xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
 	return
 	
 def filmes_trending():
@@ -1862,6 +1896,36 @@ class trakt_api:
 					shows_watchlist.append((title,year,imdbid))
 				except: pass
 			return shows_watchlist
+			
+	def get_movie_colection(self):
+		url_api = 'http://api.trakt.tv/user/library/movies/collection.json/' + self.api_key +'/' + selfAddon.getSetting('trakt_login')
+		try: data = json_get(url_api)
+		except: data = ''
+		if data:
+			movie_watchlist = []
+			for movie_dict in data:
+				try:
+					title = str(movie_dict["title"])
+					year = str(movie_dict["year"])
+					imdbid = str(movie_dict["imdb_id"])
+					movie_watchlist.append((title,year,imdbid))
+				except: pass
+			return movie_watchlist
+			
+	def get_shows_colection(self):
+		url_api = 'http://api.trakt.tv/user/library/shows/collection.json/' + self.api_key +'/' + selfAddon.getSetting('trakt_login')
+		try: data = json_get(url_api)
+		except: data = ''
+		if data:
+			movie_watchlist = []
+			for movie_dict in data:
+				try:
+					title = str(movie_dict["title"])
+					year = str(movie_dict["year"])
+					imdbid = str(movie_dict["imdb_id"])
+					movie_watchlist.append((title,year,imdbid))
+				except: pass
+			return movie_watchlist
 	
 
 				
@@ -2734,5 +2798,7 @@ elif mode==51: filmes_trending()
 elif mode==52: series_trending()
 elif mode==53: filmes_watchlist(name)
 elif mode==54: series_watchlist(name)
+elif mode==55: filmes_collection_trakt(name)
+elif mode==56: series_collection_trakt(name)
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))

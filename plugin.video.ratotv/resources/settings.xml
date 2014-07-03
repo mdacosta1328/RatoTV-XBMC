@@ -38,6 +38,7 @@
       <setting type="sep" />      
       <setting type="action" label="Procurar novos episódios agora" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=48&name=rato&url=ratotv.net)" />
       <setting type="action" label="Subscrever watchlist do Trakt (séries) agora" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=54&name=actualizarlib&url=ratotv.net)" />
+      <setting type="action" label="Adicionar colecção Trakt (Series) à biblioteca agora" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=56&name=actualizarlib&url=ratotv.net)" />
       <setting label="[B][COLOR green]Filmes:[/B][/COLOR]" type="lsep" />
       <setting id="filmes-library" type="bool" label="Procurar novos filmes (service.py)" default="false"/>
       <setting id="filmes-watchlist" type="bool" label="Adicionar automaticamente watchlist trakt.tv à biblioteca (service.py)" default="false" enable="!eq(-1,false)"/>
@@ -47,6 +48,7 @@
       <setting type="action" label="Transferir toda a biblioteca de filmes"  action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=47&name=todos&url=ratotv.net)" />
       <setting type="action" label="Procurar novos filmes agora"  action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=47&name=novos&url=ratotv.net)" />
       <setting type="action" label="Adicionar watchlist do Trakt (Filmes) à biblioteca agora" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=53&name=actualizarlib&url=ratotv.net)" />
+      <setting type="action" label="Adicionar colecção Trakt (Filmes) à biblioteca agora" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=55&name=actualizarlib&url=ratotv.net)" />
       <setting label="[B][COLOR green]Gestão da biblioteca XBMC:[/B][/COLOR]" type="lsep" />
       <setting type="action" label="Actualizar biblioteca"  action="XBMC.UpdateLibrary(video)" />
       <setting type="action" label="'Limpar' a biblioteca" option="close" action="XBMC.CleanLibrary(video)" />
