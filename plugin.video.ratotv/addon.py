@@ -403,8 +403,9 @@ class Player(xbmc.Player):
 			try: xbmcvfs.delete(self.filemedia)
 			except: pass
 		if selfAddon.getSetting('votar-stopped')=='true':
+			is_serie = re.compile('S(\d+)E(\d+)').findall(name)
 			try:
-				if season: pass
+				if season or is_serie: pass
 				else: votar_ratotv()
 			except: votar_ratotv()
 		else:
@@ -1787,7 +1788,7 @@ class trakt_api:
     
 	def get_showepisode_thumb(self,originaltitle,year,season,episode):
 		screen = ''
-		id_tvdb = thetvdb_api()._id(originaltitle,int(year))
+		id_tvdb = thetvdb_api()._id(originaltitle,int(year.replace('-','')))
 		json_code = self.shows_season(id_tvdb,int(season))
 		for entry in json_code:
 			if int(entry['episode']) == int(episode):
@@ -2259,7 +2260,7 @@ def play_from_outside(name,url):
 	match = re.compile('<img src="/templates/ratotvv2/dleimages/comments-img2.png"/><a href="http://www.ratotv.net/(.+?)/">.+?</a>').findall(html_source)
 	if match[0] == 'tvshows':
 		proceed = False
-		match = re.compile('S(.+?)E(\d+)').findall(name)
+		match = re.compile('S(\d+)E(\d+)').findall(name)
 		try:
 			int(match[0][0])
 			int(match[0][1])
