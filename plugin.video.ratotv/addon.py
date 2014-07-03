@@ -2194,7 +2194,7 @@ def listar_series_subseguir(name):
 				HD = eval(data[6])
 				favorito = eval(data[7])		
 			else:
-				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = obter_info_url(serie_array[1],True)
+				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = obter_info_url(serie_array[2],True)
 				progresso.update(int(i/float(len(files))*100),'A obter metadata...',name)
 			addDir_filme(name + ' (' + str(infolabels["Year"]) +')',url,10,iconimage,infolabels,fanart,len(files),True,filme_ou_serie,HD,favorito)
 			i += 1
