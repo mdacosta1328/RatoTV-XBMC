@@ -1013,14 +1013,21 @@ def janela_lateral(label,texto):
     window.getControl(5).setText(texto)
 
 def save(filename,contents):
-    fh = open(filename, 'w')
-    fh.write(contents)
-    fh.close()
+    try:
+    	fh = open(filename, 'w')
+    	fh.write(contents)
+    	fh.close()
+    except:
+    	print "Nao gravou conteudos de %s" % filename
 
 def readfile(filename):
-	f = open(filename, "r")
-	string = f.read()
-	return string
+	try:
+		f = open(filename, "r")
+		string = f.read()
+		return string
+	except:
+		print "Nao abriu conteudos de: %s" % filename
+	        return None
 	
 #format function by fightnight -tks!
 def format_time(seconds):
@@ -2197,11 +2204,12 @@ def transferir_biblioteca_filmes(name):
 				pag_seguinte = re.compile('<div class="next"><a href="(.+?)">').findall(html_source)[0]
 				html_source_trunk = re.findall('<div class="shortpost">(.*?)<\/div>\n<\/div>\n<\/div>', html_source, re.DOTALL)
 			for trunk in html_source_trunk:
+				cleaned_title= re.sub('[^-a-zA-Z0-9_.()\\\/ ]+', '',  infolabels['originaltitle'])
 				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(trunk)
 				if comando == 'todos': progresso.update(int((float(current_page)/int(total_paginas)*100)),'A transferir biblioteca de Filmes...Aguarde...',infolabels['originaltitle'] + ' (' + infolabels['Year'] +')','Página '+str(current_page)+'/'+str(total_paginas))
-				if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')')): xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')'))
-				strm_filme = os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')',infolabels['originaltitle']+'.strm')
-				strm_contents = 'plugin://plugin.video.ratotv/?url=' + url +'&mode=44&name=' + urllib.quote_plus(infolabels['originaltitle'])
+				if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',cleaned_title + ' ('+str(infolabels["Year"])+')')): xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',cleaned_title + ' ('+str(infolabels["Year"])+')'))
+				strm_filme = os.path.join(selfAddon.getSetting('libraryfolder'),'movies',cleaned_title + ' ('+str(infolabels["Year"])+')',cleaned_title+'.strm')
+				strm_contents = 'plugin://plugin.video.ratotv/?url=' + url +'&mode=44&name=' + urllib.quote_plus(cleaned_title)
 				id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
 				movie_database_file = os.path.join(movie_database_folder,id_ratotv+'.txt')
 
