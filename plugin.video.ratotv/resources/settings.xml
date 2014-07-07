@@ -47,6 +47,7 @@
       <setting type="sep" />      
       <setting type="action" label="Transferir toda a biblioteca de filmes"  action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=47&name=todos&url=ratotv.net)" />
       <setting type="action" label="Procurar novos filmes agora"  action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=47&name=novos&url=ratotv.net)" />
+      <setting type="action" label="Procurar filmes dos favoritos agora" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=100&name=todos&url=ratotv.net)" />
       <setting type="action" label="Adicionar watchlist do Trakt (Filmes) à biblioteca agora" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=53&name=actualizarlib&url=ratotv.net)" />
       <setting type="action" label="Adicionar colecção Trakt (Filmes) à biblioteca agora" action="XBMC.RunPlugin(plugin://plugin.video.ratotv/?mode=55&name=actualizarlib&url=ratotv.net)" />
       <setting label="[B][COLOR green]Gestão da biblioteca XBMC:[/B][/COLOR]" type="lsep" />
