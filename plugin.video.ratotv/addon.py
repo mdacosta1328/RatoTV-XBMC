@@ -1118,7 +1118,7 @@ def filmes_watchlist(name):
 		for title,year,imdb_id in movies_watch:
 			url_pesquisa = base_url + '?do=search&subaction=search&search_start=1&story=' + str(imdb_id)
 			url_rato = listar_pesquisa(urllib.quote_plus(url_pesquisa),'values')
-			if url_rato: adicionar_filme_biblioteca(title,url_rato,'',False)
+			if url_rato: adicionar_filme_biblioteca(title,url_rato,'',False,True)
 		if name == 'actualizarlib': xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
 	return
 	
@@ -1132,7 +1132,7 @@ def filmes_collection_trakt(name):
 			i +=1
 			url_pesquisa = base_url + '?do=search&subaction=search&search_start=1&story=' + str(imdb_id)
 			url_rato = listar_pesquisa(urllib.quote_plus(url_pesquisa),'values')
-			if url_rato: adicionar_filme_biblioteca(title,url_rato,'',False)
+			if url_rato: adicionar_filme_biblioteca(title,url_rato,'',False,True)
 			progresso.update(int(((i))/(total_items)*100),'A procurar filme do trakt no RatoTV...',title + ' (' + year + ')' )
 		progresso.update(100,"Terminado!")
 		progresso.close()
@@ -2107,7 +2107,7 @@ def handle_wait(time_to_wait,title,text,segunda=''):
 #                                            SUBSCRICOES                                                          #
 ###################################################################################################################
 
-def adicionar_filme_biblioteca(name,url,iconimage,updatelibrary=True):
+def adicionar_filme_biblioteca(name,url,iconimage,updatelibrary=True,fromTrakt=False):
 	current_url = url
 	if selfAddon.getSetting('libraryfolder'): pass
 	else:
@@ -2120,14 +2120,18 @@ def adicionar_filme_biblioteca(name,url,iconimage,updatelibrary=True):
 	if html_source:
 		html_source_trunk = re.findall('<div class="shortpost(.*?)Reportar</a></li>', html_source, re.DOTALL)
 		if html_source_trunk:
+			if fromTrakt: nameTrakt = name
 			infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(html_source_trunk[0])
-			movie_folder = os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')')
+			if fromTrakt: movie_folder = os.path.join(selfAddon.getSetting('libraryfolder'),'movies',nameTrakt + ' ('+str(infolabels["Year"])+')')
+			else: movie_folder = os.path.join(selfAddon.getSetting('libraryfolder'),'movies',infolabels['originaltitle'] + ' ('+str(infolabels["Year"])+')')
 			userdata_folder = os.path.join(datapath,'movie-subscriptions')
 			if not xbmcvfs.exists(userdata_folder): xbmcvfs.mkdir(userdata_folder)
 			if not xbmcvfs.exists(movie_folder): xbmcvfs.mkdir(movie_folder)
-			strm_contents = 'plugin://plugin.video.ratotv/?url=' + url +'&mode=44&name=' + urllib.quote_plus(infolabels['originaltitle'])
+			if fromTrakt: strm_contents = 'plugin://plugin.video.ratotv/?url=' + url +'&mode=44&name=' + urllib.quote_plus(nameTrakt)
+			else: strm_contents = 'plugin://plugin.video.ratotv/?url=' + url +'&mode=44&name=' + urllib.quote_plus(infolabels['originaltitle'])
 			movie_database_file = os.path.join(userdata_folder,id_ratotv+'.txt')
-			movie_biblioteca_file = os.path.join(movie_folder,urllib.quote_plus(infolabels['originaltitle'])+'.strm')
+			if fromTrakt: movie_biblioteca_file = os.path.join(movie_folder,urllib.quote_plus(nameTrakt)+'.strm')
+			else: movie_biblioteca_file = os.path.join(movie_folder,urllib.quote_plus(infolabels['originaltitle'])+'.strm')
 			save(movie_biblioteca_file,strm_contents)
 			save(movie_database_file,"check")
 			if updatelibrary:
