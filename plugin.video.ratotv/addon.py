@@ -2161,7 +2161,7 @@ def procurar_novas_series(name):
 	return
 			
 
-def transferir_biblioteca_filmes(name):
+def transferir_biblioteca_filmes(name,tipo=None):
 
 	#verifica se a pasta para o download da biblioteca está definida
 
@@ -2172,6 +2172,7 @@ def transferir_biblioteca_filmes(name):
 	canceled = False
 	comando = name
 	url_current = base_url + 'movies/page/1/'
+	if tipo: url_current = base_url + tipo+'/page/1/'
 	movie_database_folder = os.path.join(datapath,'movie-subscriptions')
 
 	#verifica se ja transferiu a biblioteca anteriormente para o service.py funcionar devidamente e não tornar o xbmc lento	
@@ -2186,12 +2187,26 @@ def transferir_biblioteca_filmes(name):
 	try: html_source=post_page(url_current,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
 	except: html_source = ''
 	if html_source:
-		current_page= re.compile('/page/(\d+)/').findall(url_current)[0]
-		if not current_page: current_page = str(1)
-		pag_seguinte = re.compile('<div class="next"><a href="(.+?)">').findall(html_source)[0]
-		try: total_paginas = re.compile('.*<a href=".+?">(.+?)</a>\n<div class="next">').findall(html_source)[0]
-		except: total_paginas=re.compile('.*/page/(.+?)/">(.+?)</a> ').findall(html_source)[0]
-		current_page = int(current_page)
+		if tipo == 'favorites':
+			try:
+				current_page= re.compile('/page/(\d+)/').findall(url_current)[0]
+				if not current_page: current_page = str(1)
+				pag_seguinte = re.compile('<div class="next"><a href="(.+?)">').findall(html_source)[0]
+				try: total_paginas = re.compile('.*<a href=".+?">(.+?)</a>\n<div class="next">').findall(html_source)[0]
+				except: total_paginas=re.compile('.*/page/(.+?)/">(.+?)</a> ').findall(html_source)[0]
+				current_page = int(current_page)
+				total_paginas = total_paginas[0]
+			except:
+				current_page = 1
+				total_paginas = 1
+				pass
+		else:
+			current_page= re.compile('/page/(\d+)/').findall(url_current)[0]
+			if not current_page: current_page = str(1)
+			pag_seguinte = re.compile('<div class="next"><a href="(.+?)">').findall(html_source)[0]
+			try: total_paginas = re.compile('.*<a href=".+?">(.+?)</a>\n<div class="next">').findall(html_source)[0]
+			except: total_paginas=re.compile('.*/page/(.+?)/">(.+?)</a> ').findall(html_source)[0]
+			current_page = int(current_page)
 		html_source_trunk = re.findall('<div class="shortpost">(.*?)<\/div>\n<\/div>\n<\/div>', html_source, re.DOTALL)
 		if comando == 'todos': progresso.create('RatoTV - Biblioteca XBMC', 'A transferir biblioteca de Filmes...Aguarde...' ,'Página '+str(current_page)+'/'+str(total_paginas))
 		i=0
@@ -2210,26 +2225,25 @@ def transferir_biblioteca_filmes(name):
 			for trunk in html_source_trunk:
 				cleaned_title= re.sub('[^-a-zA-Z0-9_.()\\\/ ]+', '',  infolabels['originaltitle'])
 				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(trunk)
-				if comando == 'todos': progresso.update(int((float(current_page)/int(total_paginas)*100)),'A transferir biblioteca de Filmes...Aguarde...',infolabels['originaltitle'] + ' (' + infolabels['Year'] +')','Página '+str(current_page)+'/'+str(total_paginas))
-				if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',cleaned_title + ' ('+str(infolabels["Year"])+')')): xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',cleaned_title + ' ('+str(infolabels["Year"])+')'))
-				strm_filme = os.path.join(selfAddon.getSetting('libraryfolder'),'movies',cleaned_title + ' ('+str(infolabels["Year"])+')',cleaned_title+'.strm')
-				strm_contents = 'plugin://plugin.video.ratotv/?url=' + url +'&mode=44&name=' + urllib.quote_plus(cleaned_title)
-				id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
-				movie_database_file = os.path.join(movie_database_folder,id_ratotv+'.txt')
+				if filme_ou_serie == 'movie':
+					if comando == 'todos': progresso.update(int((float(current_page)/int(total_paginas)*100)),'A transferir biblioteca de Filmes...Aguarde...',infolabels['originaltitle'] + ' (' + infolabels['Year'] +')','Página '+str(current_page)+'/'+str(total_paginas))
+					if not xbmcvfs.exists(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',cleaned_title + ' ('+str(infolabels["Year"])+')')): xbmcvfs.mkdir(os.path.join(selfAddon.getSetting('libraryfolder'),'movies',cleaned_title + ' ('+str(infolabels["Year"])+')'))
+					strm_filme = os.path.join(selfAddon.getSetting('libraryfolder'),'movies',cleaned_title + ' ('+str(infolabels["Year"])+')',cleaned_title+'.strm')
+					strm_contents = 'plugin://plugin.video.ratotv/?url=' + url +'&mode=44&name=' + urllib.quote_plus(infolabels['originaltitle'])
+					id_ratotv = re.compile('.*/(.+?)-.+?html').findall(url)[0]
+					movie_database_file = os.path.join(movie_database_folder,id_ratotv+'.txt')
 
-			#verifica se o filme ja existe na biblioteca para interromper o ciclo caso esteja à procura de filmes novos 
-				if comando == 'novos':
-					if xbmcvfs.exists(movie_database_file):
-						current_page = int(total_paginas)
-						break
+					#verifica se o filme ja existe na biblioteca para interromper o ciclo caso esteja à procura de filmes novos 
+					if comando == 'novos':
+						if xbmcvfs.exists(movie_database_file):
+							current_page = int(total_paginas)
+							break
 						
-			#salva ficheiro na userdata para saber se item ja foi transferido anteriormente
-			
-				if not xbmcvfs.exists(movie_database_file): save(movie_database_file,'check')
-			#salva stream
-			
-				save(strm_filme,strm_contents)
-				i +=1
+					#salva ficheiro na userdata para saber se item ja foi transferido anteriormente
+					if not xbmcvfs.exists(movie_database_file): save(movie_database_file,'check')
+					#salva stream
+					save(strm_filme.decode('utf-8','ignore'),strm_contents.decode('utf-8','ignore'))
+					i +=1
 
 			current_page +=1
 			if comando == 'todos': progresso.update(int((float(current_page)/int(total_paginas)*100)),'A transferir biblioteca de Filmes...Aguarde...',infolabels['originaltitle'] + ' (' + infolabels['Year'] +')','Página '+str(current_page)+'/'+str(total_paginas))
@@ -2812,5 +2826,6 @@ elif mode==53: filmes_watchlist(name)
 elif mode==54: series_watchlist(name)
 elif mode==55: filmes_collection_trakt(name)
 elif mode==56: series_collection_trakt(name)
+elif mode==100: transferir_biblioteca_filmes(name,'favorites')
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))
