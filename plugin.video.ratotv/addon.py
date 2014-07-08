@@ -39,8 +39,8 @@ tmdb_base_url = 'http://d3gtl9l2a4fn1j.cloudfront.net/t/p/w1280'
 fanart_rato_tv = addonfolder + '/fanart.jpg'
 setting_limpar_metadata = "limpar-metadata"
 if selfAddon.getSetting('libraryfolder'):
-		tvshowsFolder = os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows')
-		moviesFolder = os.path.join(selfAddon.getSetting('libraryfolder'),'movies')
+		tvshowsFolder = xbmc.translatePath(os.path.join(selfAddon.getSetting('libraryfolder'),'tvshows'))
+		moviesFolder = xbmc.translatePath(os.path.join(selfAddon.getSetting('libraryfolder'),'movies'))
 	
 ######################################################################################################
 #                                               MENUS                                                #
