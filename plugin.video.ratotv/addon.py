@@ -2228,8 +2228,8 @@ def transferir_biblioteca_filmes(name,tipo=None):
 				pag_seguinte = re.compile('<div class="next"><a href="(.+?)">').findall(html_source)[0]
 				html_source_trunk = re.findall('<div class="shortpost">(.*?)<\/div>\n<\/div>\n<\/div>', html_source, re.DOTALL)
 			for trunk in html_source_trunk:
-				cleaned_title= re.sub('[^-a-zA-Z0-9_.()\\\/ ]+', '',  infolabels['originaltitle'])
 				infolabels,name,url,iconimage,fanart,filme_ou_serie,HD,favorito = rato_tv_get_media_info(trunk)
+				cleaned_title= re.sub('[^-a-zA-Z0-9_.()\\\/ ]+', '',  infolabels['originaltitle'])
 				if filme_ou_serie == 'movie':
 					if comando == 'todos': progresso.update(int((float(current_page)/int(total_paginas)*100)),'A transferir biblioteca de Filmes...Aguarde...',infolabels['originaltitle'] + ' (' + infolabels['Year'] +')','Página '+str(current_page)+'/'+str(total_paginas))
 					if not xbmcvfs.exists(os.path.join(moviesFolder,cleaned_title + ' ('+str(infolabels["Year"])+')')): xbmcvfs.mkdir(os.path.join(moviesFolder,cleaned_title + ' ('+str(infolabels["Year"])+')'))
