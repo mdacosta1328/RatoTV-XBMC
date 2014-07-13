@@ -1122,7 +1122,7 @@ def filmes_watchlist(name):
 			url_pesquisa = base_url + '?do=search&subaction=search&search_start=1&story=' + str(imdb_id)
 			url_rato = listar_pesquisa(urllib.quote_plus(url_pesquisa),'values')
 			if url_rato: adicionar_filme_biblioteca(title,url_rato,'',False,True)
-		if name == 'actualizarlib': xbmc.executebuiltin("XBMC.UpdateLibrary(video,"+moviesFolder+")")
+		if name == 'actualizarlib': xbmc.executebuiltin("XBMC.UpdateLibrary(video,"+os.path.join(moviesFolder,'')+")")
 	return
 	
 def filmes_collection_trakt(name):
@@ -1139,7 +1139,7 @@ def filmes_collection_trakt(name):
 			progresso.update(int(((i))/(total_items)*100),'A procurar filme do trakt no RatoTV...',title + ' (' + year + ')' )
 		progresso.update(100,"Terminado!")
 		progresso.close()
-		xbmc.executebuiltin("XBMC.UpdateLibrary(video,"+moviesFolder+")")
+		xbmc.executebuiltin("XBMC.UpdateLibrary(video,"+os.path.join(moviesFolder,'')+")")
 	return
 	
 def series_watchlist(name):
@@ -1149,7 +1149,7 @@ def series_watchlist(name):
 			url_pesquisa = base_url + '?do=search&subaction=search&search_start=1&story=' + str(imdb_id)
 			url_rato = listar_pesquisa(urllib.quote_plus(url_pesquisa),'values')
 			if url_rato: subscrever_serie(title,url_rato,'',daemon=True)
-	if name == 'actualizarlib': xbmc.executebuiltin("XBMC.UpdateLibrary(video,"+tvshowsFolder+")")
+	if name == 'actualizarlib': xbmc.executebuiltin("XBMC.UpdateLibrary(video,"+os.path.join(tvshowsFolder,'')+")")
 	return
 	
 def series_collection_trakt(name):
@@ -1166,7 +1166,7 @@ def series_collection_trakt(name):
 			progresso.update(int(((i))/(total_items)*100),'A procurar serie do trakt no RatoTV...',title + ' (' + year + ')' )
 		progresso.update(100,"Terminado!")
 		progresso.close()
-		xbmc.executebuiltin("XBMC.UpdateLibrary(video,"+tvshowsFolder+")")
+		xbmc.executebuiltin("XBMC.UpdateLibrary(video,"+os.path.join(tvshowsFolder,'')+")")
 	return
 	
 def filmes_trending():
@@ -2162,7 +2162,7 @@ def procurar_novas_series(name):
 			serie_file_data = readfile(serie_file)
 			name,url,iconimage = serie_file_data.split('|')
 			subscrever_serie(name,url,iconimage,True)
-		xbmc.executebuiltin("XBMC.UpdateLibrary(video,"+tvshowsFolder+")")
+		xbmc.executebuiltin("XBMC.UpdateLibrary(video,"+os.path.join(tvshowsFolder,'')+")")
 	return
 			
 
@@ -2255,7 +2255,8 @@ def transferir_biblioteca_filmes(name,tipo=None):
 	if comando == 'todos' and not canceled:
 		progresso.update(100,'Tarefa realizada com sucesso')
 		progresso.close()
-	if not canceled and i >= 1: xbmc.executebuiltin("XBMC.UpdateLibrary(video,"+moviesFolder+")")
+	print 'aki##',i,moviesFolder
+	if i >= 1: xbmc.executebuiltin("XBMC.UpdateLibrary(video,"+os.path.join(moviesFolder,'')+")")
 	return
 
 def listar_series_subseguir(name):
