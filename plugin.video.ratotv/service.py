@@ -31,7 +31,7 @@ class service:
 						if xbmcaddon.Addon().getSetting("filmes-watchlist") == 'true': 
 							xbmc.executebuiltin('RunPlugin(plugin://plugin.video.ratotv/?mode=53&name=ratotv&url=ratotv.net)')
 							xbmc.sleep(200)
-							xbmc.executebuiltin("XBMC.UpdateLibrary(video)")
+							xbmc.executebuiltin("XBMC.UpdateLibrary(video,"+os.path.join(selfAddon.getSetting('libraryfolder'),'movies')+")")
 						xbmc.sleep(200)
 						if xbmcaddon.Addon().getSetting("filmes-service") == '0' or xbmcaddon.Addon().getSetting("filmes-service") == '1':
 							xbmc.executebuiltin('RunPlugin(plugin://plugin.video.ratotv/?mode=47&name=novos&url=ratotv.net)')
