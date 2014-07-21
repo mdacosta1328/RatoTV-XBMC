@@ -94,26 +94,11 @@ def Menu_principal_filmes():
     menu_view()
 
 def Menu_categorias_filmes():
-    addDir_reg_menu('Acção',base_url + 'tags/Ação/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Animação',base_url + 'tags/Animação/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Aventura',base_url + 'tags/Aventura/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Biografia',base_url + 'tags/Biografia/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Comédia',base_url + 'tags/Comédia/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Crime',base_url + 'tags/Crime/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Desporto',base_url + 'tags/Desporto/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Documentário',base_url + 'tags/Documentário/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Drama',base_url + 'tags/Drama/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Familiar',base_url + 'tags/Familiar/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Fantasia',base_url + 'tags/Fantasia/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Ficção Científica',base_url + 'tags/Ficção+Científica/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Guerra',base_url + 'tags/Guerra/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('História',base_url + 'tags/História/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Mistério',base_url + 'tags/Mistério/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Musical',base_url + 'tags/Musical/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Romance',base_url + 'tags/Romance/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Terror',base_url + 'tags/Terror/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Thriller',base_url + 'tags/Thriller/page/1/',2,artfolder+'filmes.jpg',True)
-    addDir_reg_menu('Western',base_url + 'tags/Western/page/1/',2,artfolder+'filmes.jpg',True)
+    html_source = abrir_url(base_url)
+    match = re.findall('<li class="dropdown"><a href="#"><img src="/templates/ratotvv2/dleimages/ico-4.png" />Género <span>v</span></a>(.*?)</div>\s+</ul>\s+</li>', html_source, re.DOTALL)
+    if match:
+        match2 = re.compile('<li><a href="(.+?)">(.+?)</a></li>').findall(match[0])
+        for site,name in match2: addDir_reg_menu(name,site+'/page/1/',2,artfolder+'filmes.jpg',True)
     menu_view()
 
 def alterar_definicoes():
