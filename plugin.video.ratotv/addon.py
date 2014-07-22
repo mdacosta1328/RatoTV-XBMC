@@ -367,7 +367,6 @@ class Player(xbmc.Player):
 
     def onPlayBackStarted(self):
         print 'player Start'
-        self.strm_file = self.getPlayingFile()
         self.totalTime = self.getTotalTime()
         print 'total time',self.totalTime
         if selfAddon.getSetting('track_player') == 'true':
@@ -1694,7 +1693,6 @@ def verificar_novoepisodio_serie(txt):
 ####
 
 def adicionar_visto(url,season=None,episode=None):
-	print "COISO E TAL",season,episode
 	try:
 		addon_id_trakt = 'script.trakt'
 		trakt_addon = xbmcaddon.Addon(id=addon_id_trakt)
