@@ -367,6 +367,7 @@ class Player(xbmc.Player):
 
     def onPlayBackStarted(self):
         print 'player Start'
+        self.strm_file = self.getPlayingFile()
         self.totalTime = self.getTotalTime()
         print 'total time',self.totalTime
         if selfAddon.getSetting('track_player') == 'true':
@@ -382,7 +383,7 @@ class Player(xbmc.Player):
         time = int(self.time)
         print 'self.time/self.totalTime='+str(self.time/self.totalTime)
         if (self.time/self.totalTime > 0.90): 
-		adicionar_visto(url,season=season,episode=episode)
+		adicionar_visto(url,self.season,self.episode)
 		try:
 			definition_trakt = readfile(os.path.join(datapath,'trakt.txt'))
 			xbmcaddon.Addon(id='script.trakt').setSetting('rate_movie',definition_trakt)
@@ -1693,6 +1694,7 @@ def verificar_novoepisodio_serie(txt):
 ####
 
 def adicionar_visto(url,season=None,episode=None):
+	print "COISO E TAL",season,episode
 	try:
 		addon_id_trakt = 'script.trakt'
 		trakt_addon = xbmcaddon.Addon(id=addon_id_trakt)
@@ -1740,11 +1742,39 @@ def adicionar_visto(url,season=None,episode=None):
 	else: NewVistoFile=os.path.join(vistospath,id_ratotv+'.txt')
 	if not os.path.exists(NewVistoFile):
 		save(NewVistoFile,'')
+		#Marcar como visto na biblioteca - Tks lambda for the feedback
+		try:
+			if not season and not episode:
+				if xbmc.getCondVisibility('Library.HasContent(Movies)'):
+					html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+					infolabels,name,url2,iconimage2,fanart2,filme_ou_serie,HD2,favorito2 = rato_tv_get_media_info(html_source)
+					print "A verificar se filme existe na biblioteca"
+					meta = xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "VideoLibrary.GetMovies", "params": {"filter":{"or": [{"field": "year", "operator": "is", "value": "%s"}, {"field": "year", "operator": "is", "value": "%s"}, {"field": "year", "operator": "is", "value": "%s"}]}, "properties" : ["file"]}, "id": 1}' % (infolabels["Year"], str(int(infolabels["Year"])+1), str(int(infolabels["Year"])-1)))
+					meta = unicode(meta, 'utf-8', errors='ignore')
+					meta = json.loads(meta)
+					meta = meta['result']['movies']
+					originaltitle = infolabels["originaltitle"]
+					cleaned_title= re.sub('[^-a-zA-Z0-9_.()\\\/ ]+', '',  originaltitle)
+					meta = [i for i in meta if cleaned_title in i['file']][0]
+					xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "VideoLibrary.SetMovieDetails", "params": {"movieid" : %s, "playcount" : 1 }, "id": 1 }' % str(meta['movieid']))	
+			else:
+				if xbmc.getCondVisibility('Library.HasContent(TVShows)'):
+					print "A verificar se a série existe na biblioteca"
+					html_source=post_page(url,selfAddon.getSetting('login_name'),selfAddon.getSetting('login_password'))
+					infolabels,name,url2,iconimage2,fanart2,filme_ou_serie,HD2,favorito2 = rato_tv_get_media_info(html_source)
+					originaltitle = infolabels["originaltitle"]
+					cleaned_title= re.sub('[^-a-zA-Z0-9_.()\\\/ ]+', '',  originaltitle)
+					meta = xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "VideoLibrary.GetEpisodes", "params": {"filter":{"and": [{"field": "season", "operator": "is", "value": "%s"}, {"field": "episode", "operator": "is", "value": "%s"}]}, "properties": ["title", "plot", "votes", "rating", "writer", "firstaired", "playcount", "runtime", "director", "productioncode", "season", "episode", "originaltitle", "showtitle", "lastplayed", "fanart", "thumbnail", "file", "resume", "tvshowid", "dateadded", "uniqueid"]}, "id": 1}' % (season, episode))
+					meta = unicode(meta, 'utf-8', errors='ignore')
+					meta = json.loads(meta)
+					meta = meta['result']['episodes']
+					meta = [i for i in meta if cleaned_title in i['file']][0]
+					xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "VideoLibrary.SetEpisodeDetails", "params": {"episodeid" : %s, "playcount" : 1 }, "id": 1 }' % str(meta['episodeid']))
+		except:pass
 		xbmc.executebuiltin("XBMC.Notification(RatoTV,"+"Marcado como visto"+","+"6000"+"," + addonfolder +"/icon.png)")
 		xbmc.executebuiltin("XBMC.Container.Refresh")
 	else:
 		print 'Aviso - visto ja existe'
-		mensagemok('RatoTV','Já estava marcado como visto.')
 
 def remover_visto(url,season=None,episode=None):
     print 'Marcando como não visto: url: '+url
@@ -2555,7 +2585,7 @@ def addDir_temporada(name,url,dicionario,mode,iconimage,folder,fanart):
     return ok
 
 def addDir_filme(name,url,mode,iconimage,infolabels,fanart,totalit,pasta,tipo,HD,favorito):
-    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&iconimage="+urllib.quote_plus(iconimage)+"&tipo="+urllib.quote_plus(tipo)
+    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&iconimage="+urllib.quote_plus(iconimage)+"&tipo="+urllib.quote_plus(tipo)+"&year="+urllib.quote_plus(str(year))
     try: u += "&year="+infolabels['Year']
     except: pass
     try: u += "&imdb_id="+infolabels['code']
@@ -2628,7 +2658,7 @@ def addDir_filme(name,url,mode,iconimage,infolabels,fanart,totalit,pasta,tipo,HD
 def addDir_episodio(nomeSerie,title,description,url,temporada,episodio,sources,srt,thumbnail,fanart):
     if description: episodeName=description
     else: episodeName=title
-    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode=40"+"&iconimage="+urllib.quote_plus(thumbnail)+"&seriesName="+urllib.quote_plus(nomeSerie)+"&name="+urllib.quote_plus(episodeName)+"&sources="+urllib.quote_plus(str(sources))
+    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode=40"+"&iconimage="+urllib.quote_plus(thumbnail)+"&seriesName="+urllib.quote_plus(nomeSerie)+"&name="+urllib.quote_plus(episodeName)+"&sources="+urllib.quote_plus(str(sources))+"&year="+urllib.quote_plus(str(year))
     try: u+="&originaltitle="+urllib.quote_plus(originaltitle)
     except: u+="&originaltitle="+nomeSerie
     if srt: u+="&srt="+urllib.quote_plus(srt)
