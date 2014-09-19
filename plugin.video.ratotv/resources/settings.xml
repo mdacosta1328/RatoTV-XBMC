@@ -25,7 +25,7 @@
       <setting id="movie-trailer" type="bool" label="Procurar Trailers" default="false"/>
       <setting label="[B][COLOR green]Metadata adicional Séries:[/B][/COLOR]" type="lsep" />
       <setting id="series-fanart" type="bool" label="Procurar Fanart" default="true"/>
-      <setting id="series-season-poster" type="bool" label="Procurar poster da temporda" default="true"/>
+      <setting id="series-season-poster" type="bool" label="Procurar poster da temporada" default="true"/>
       <setting id="series-episode-thumbnails" type="bool" label="Procurar thumbnail do episódio" default="true"/>
    </category>
    <category label="Biblioteca">
