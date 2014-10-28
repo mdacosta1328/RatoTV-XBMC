@@ -1,4 +1,6 @@
 RatoTV-XBMC
 ===========
 
-Colaborative development repository for the RatoTV XBMC addon. RatoTV is a known Portuguese movie and tvshow website. Anyone is free to commit and improve/correct the code.
+Este addon não é mais mantido. Apenas se mantem no github para backup do código.
+
+This addon is no longer being maintained. It is only in github to serve as backup.
